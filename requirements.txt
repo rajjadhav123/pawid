@@ -1,10 +1,8 @@
-# PawID — Python Dependencies
-# Install with: pip install -r requirements.txt
-
 flask
 gunicorn
 numpy
 pillow
 python-dotenv
 requests
-tensorflow-cpu
+tf-keras
+tensorflow-cpu==2.16.2
