@@ -1,0 +1,4924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PawID — Dog Breed Detection System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<style>
+:root {
+  --cream: #fdf8f2;
+  --warm: #f5e9d8;
+  --warm2: #eddfc8;
+  --brown: #4a2e12;
+  --brown2: #6b4423;
+  --amber: #c97c2a;
+  --amber2: #e8a84b;
+  --dark: #1a0d04;
+  --muted: #8a7060;
+  --muted2: #b09880;
+  --white: #ffffff;
+  --green: #2d5a2a;
+  --green-bg: #e6f2e5;
+  --red: #7a2020;
+  --red-bg: #f5e5e5;
+  --blue: #1e3a6e;
+  --blue-bg: #e5ecf8;
+  --yellow-bg: #fdf3d8;
+  --shadow-sm: 0 2px 8px rgba(74,46,18,0.08);
+  --shadow: 0 6px 24px rgba(74,46,18,0.12);
+  --shadow-lg: 0 16px 48px rgba(74,46,18,0.18);
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--dark);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--brown);
+  padding: 0 40px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+}
+.header-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--amber2);
+  letter-spacing: -0.3px;
+}
+.header-logo span { color: #fff; }
+.header-sub { color: rgba(255,255,255,0.5); font-size: 0.72rem; margin-top: 1px; letter-spacing: 0.5px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #5cc95c;
+  box-shadow: 0 0 6px #5cc95c;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+.status-text { color: rgba(255,255,255,0.6); font-size: 0.78rem; }
+
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  padding: 70px 20px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -80px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(201,124,42,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--warm); color: var(--brown2);
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.5px;
+  margin-bottom: 18px;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+  font-weight: 900;
+  color: var(--brown);
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+.hero h1 em { color: var(--amber); font-style: italic; }
+.hero-desc {
+  margin: 18px auto 0;
+  max-width: 520px;
+  color: var(--muted);
+  font-size: 1.05rem;
+  font-weight: 400;
+}
+.hero-stats {
+  display: flex; justify-content: center; gap: 32px;
+  margin-top: 32px; flex-wrap: wrap;
+}
+.hero-stat { text-align: center; }
+.hero-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 700; color: var(--amber);
+  line-height: 1;
+}
+.hero-stat-label { color: var(--muted2); font-size: 0.75rem; margin-top: 3px; }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ── UPLOAD PANEL ── */
+.upload-panel {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+.upload-panel-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--warm);
+}
+.upload-tab {
+  flex: 1; padding: 16px 20px;
+  text-align: center;
+  font-weight: 600; font-size: 0.88rem;
+  color: var(--muted);
+  cursor: pointer;
+  border: none; background: none;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  position: relative;
+}
+.upload-tab.active {
+  color: var(--brown);
+  background: var(--cream);
+}
+.upload-tab.active::after {
+  content: '';
+  position: absolute; bottom: -2px; left: 0; right: 0;
+  height: 2px; background: var(--amber);
+}
+.tab-content { display: none; padding: 28px; }
+.tab-content.active { display: block; }
+
+/* Drop Zone */
+.drop-zone {
+  border: 2.5px dashed var(--amber);
+  border-radius: var(--radius);
+  background: var(--cream);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  background: var(--warm); border-color: var(--brown);
+  transform: translateY(-2px);
+}
+.drop-icon { font-size: 3rem; display: block; margin-bottom: 14px; }
+.drop-zone h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem; color: var(--brown);
+}
+.drop-zone p { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+.drop-btn {
+  margin-top: 20px;
+  background: var(--amber);
+  color: white; border: none;
+  padding: 12px 28px; border-radius: 40px;
+  font-weight: 600; font-size: 0.92rem;
+  cursor: pointer; transition: background 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.drop-btn:hover { background: var(--brown); }
+#fileInput { display: none; }
+
+/* Preview */
+.preview-wrap {
+  display: none;
+  align-items: center; gap: 20px;
+  background: var(--cream);
+  border-radius: var(--radius);
+  padding: 20px; flex-wrap: wrap;
+}
+.preview-wrap.visible { display: flex; }
+.preview-img {
+  width: 140px; height: 140px;
+  object-fit: cover; border-radius: 12px;
+  box-shadow: var(--shadow-sm); flex-shrink: 0;
+}
+.preview-meta h4 { font-weight: 600; color: var(--brown); }
+.preview-meta p { color: var(--muted); font-size: 0.85rem; margin-top: 3px; }
+.detect-btn {
+  margin-top: 12px;
+  background: var(--brown); color: white; border: none;
+  padding: 13px 24px; border-radius: 10px;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: all 0.25s; font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; gap: 8px;
+}
+.detect-btn:hover { background: var(--amber); transform: translateY(-1px); }
+.detect-btn:disabled {
+  background: var(--muted2); cursor: not-allowed; transform: none;
+}
+.change-img-btn {
+  background: none; border: 1.5px solid var(--muted2);
+  color: var(--muted); padding: 8px 16px;
+  border-radius: 8px; font-size: 0.82rem; cursor: pointer;
+  margin-top: 8px; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.change-img-btn:hover { border-color: var(--amber); color: var(--amber); }
+
+/* Browse Tab */
+.browse-search {
+  display: flex; gap: 10px; margin-bottom: 20px;
+}
+.browse-search input {
+  flex: 1; padding: 12px 16px;
+  border: 2px solid var(--warm2);
+  border-radius: 10px; font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; color: var(--dark);
+  transition: border-color 0.2s;
+}
+.browse-search input:focus { outline: none; border-color: var(--amber); }
+.breed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  max-height: 300px; overflow-y: auto;
+}
+.breed-chip {
+  background: var(--cream); border: 1.5px solid var(--warm2);
+  border-radius: 8px; padding: 10px 12px;
+  font-size: 0.82rem; font-weight: 500; color: var(--brown2);
+  cursor: pointer; transition: all 0.2s;
+  text-align: center; display: flex; align-items: center;
+  justify-content: center; gap: 5px;
+}
+.breed-chip:hover { background: var(--amber); color: white; border-color: var(--amber); }
+.breed-chip.indian { border-color: #f4a020; color: #7a4800; background: #fff9ee; }
+.breed-chip.indian:hover { background: #f4a020; color: white; border-color: #f4a020; }
+
+/* ── LOADING ── */
+.loading-panel {
+  display: none;
+  text-align: center; padding: 60px 20px;
+  background: white; border-radius: var(--radius-lg);
+  box-shadow: var(--shadow); margin-bottom: 32px;
+}
+.loading-panel.visible { display: block; }
+.paw-anim { font-size: 3.5rem; animation: paw-bounce 0.7s infinite alternate; }
+@keyframes paw-bounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-18px) scale(1.1); } }
+.loading-panel h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; color: var(--brown); margin-top: 20px;
+}
+.loading-panel p { color: var(--muted); margin-top: 6px; font-size: 0.9rem; }
+.progress-bar {
+  width: 240px; height: 4px;
+  background: var(--warm); border-radius: 4px;
+  margin: 18px auto 0; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(to right, var(--amber), var(--amber2));
+  border-radius: 4px; animation: prog 2.5s ease-in-out infinite;
+}
+@keyframes prog { 0% { width:0%; margin-left:0; } 60% { width:100%; margin-left:0; } 100% { width:0%; margin-left:100%; } }
+
+/* ── DEMO BANNER ── */
+.demo-banner {
+  display: none;
+  background: var(--yellow-bg);
+  border: 1.5px solid #f0d060;
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  font-size: 0.88rem;
+  color: #7a6010;
+  align-items: center; gap: 8px;
+}
+.demo-banner.visible { display: flex; }
+
+/* ── RESULTS ── */
+.result-panel {
+  display: none;
+  margin-bottom: 32px;
+}
+.result-panel.visible { display: block; }
+
+/* Result header card */
+.result-header-card {
+  background: linear-gradient(135deg, var(--brown) 0%, #2d1a08 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 32px;
+  display: flex; align-items: flex-start; gap: 20px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-header-card .shine-sweep {
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255,255,255,0.07) 40%,
+    rgba(232,168,75,0.18) 50%,
+    rgba(255,255,255,0.07) 60%,
+    transparent 80%
+  );
+  animation: card-shine 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes card-shine {
+  0%   { left: -100%; opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { left: 160%;  opacity: 1; }
+  51%  { opacity: 0; }
+  100% { left: 160%;  opacity: 0; }
+}
+.result-breed-emoji { font-size: 4rem; line-height: 1; }
+.result-breed-info { flex: 1; min-width: 200px; }
+.result-breed-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem; font-weight: 900;
+  color: var(--amber2); line-height: 1.1;
+}
+.result-breed-origin { color: rgba(255,255,255,0.55); font-size: 0.85rem; margin-top: 5px; }
+.result-breed-desc { color: rgba(255,255,255,0.8); font-size: 0.92rem; margin-top: 10px; line-height: 1.5; max-width: 500px; }
+.result-confidence-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.confidence-badge {
+  background: var(--amber);
+  color: white; font-weight: 700;
+  font-size: 1.3rem; padding: 12px 22px;
+  border-radius: 40px;
+  white-space: nowrap;
+}
+.confidence-label { color: rgba(255,255,255,0.5); font-size: 0.75rem; text-align: right; }
+
+/* Info Grid */
+.info-grid {
+  background: white;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.info-card {
+  padding: 22px;
+  border-right: 1px solid var(--warm);
+  border-bottom: 1px solid var(--warm);
+  transition: background 0.2s;
+}
+.info-card:hover { background: var(--cream); }
+.ic-icon { font-size: 1.6rem; margin-bottom: 8px; }
+.ic-label {
+  font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--muted2); font-weight: 600;
+}
+.ic-value { font-size: 0.95rem; color: var(--dark); margin-top: 5px; line-height: 1.5; }
+
+/* Meters */
+.meter-row { margin-top: 6px; }
+.meter-head {
+  display: flex; justify-content: space-between;
+  font-size: 0.82rem; color: var(--muted); margin-bottom: 4px;
+}
+.meter-head span:last-child { font-weight: 700; color: var(--dark); }
+.meter-bar {
+  height: 7px; background: var(--warm);
+  border-radius: 7px; overflow: hidden;
+}
+.meter-fill {
+  height: 100%; border-radius: 7px;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0;
+}
+.mf-green  { background: linear-gradient(90deg, #2d8f2a, #5cc95c); }
+.mf-amber  { background: linear-gradient(90deg, var(--amber), var(--amber2)); }
+.mf-red    { background: linear-gradient(90deg, #c02020, #e05050); }
+.mf-blue   { background: linear-gradient(90deg, #1e3a6e, #4a7ed4); }
+
+/* Tags */
+.tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.tag {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.76rem; font-weight: 600;
+}
+.tag-green  { background: var(--green-bg); color: var(--green); }
+.tag-red    { background: var(--red-bg); color: var(--red); }
+.tag-blue   { background: var(--blue-bg); color: var(--blue); }
+.tag-amber  { background: #fdefd0; color: #7a4a00; }
+.tag-brown  { background: #eedfd0; color: var(--brown); }
+
+/* India suitability bar */
+.india-bar-wrap {
+  background: var(--warm); border-radius: var(--radius);
+  padding: 16px 20px;
+  border-left: 4px solid #f0a020;
+}
+.india-score-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem; font-weight: 700;
+  color: var(--amber); line-height: 1;
+}
+.india-score-label { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+/* Alternatives row */
+.alternatives {
+  background: white;
+  border-top: 1px solid var(--warm);
+  padding: 20px 22px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.alternatives h4 {
+  font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--muted2); margin-bottom: 12px;
+}
+.alt-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.alt-chip {
+  background: var(--cream); border: 1.5px solid var(--warm2);
+  border-radius: 8px; padding: 7px 14px;
+  font-size: 0.82rem; font-weight: 500; color: var(--brown2);
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: all 0.2s;
+}
+.alt-chip:hover { background: var(--amber); color: white; border-color: var(--amber); }
+.alt-chip-conf { color: var(--muted2); font-size: 0.75rem; }
+.alt-chip:hover .alt-chip-conf { color: rgba(255,255,255,0.7); }
+
+/* Fun facts */
+.funfacts-list { list-style: none; }
+.funfacts-list li {
+  padding: 6px 0; font-size: 0.88rem; color: var(--muted);
+  display: flex; gap: 8px; align-items: flex-start;
+  border-bottom: 1px solid var(--warm);
+}
+.funfacts-list li:last-child { border-bottom: none; }
+.funfacts-list li::before { content: '✦'; color: var(--amber); flex-shrink: 0; margin-top: 1px; }
+
+/* Food sections */
+.food-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.food-col h5 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+.food-col-good { color: var(--green); }
+.food-col-bad  { color: var(--red); }
+.food-item {
+  font-size: 0.82rem; padding: 3px 0;
+  display: flex; gap: 5px; align-items: flex-start; color: var(--muted);
+}
+.food-item::before { flex-shrink: 0; margin-top: 1px; }
+.food-col-good .food-item::before { content: '✓'; color: var(--green); }
+.food-col-bad  .food-item::before { content: '✗'; color: var(--red); }
+
+/* ── WEBCAM TAB ── */
+.webcam-area {
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+}
+.webcam-video-wrap {
+  position: relative; width: 100%; max-width: 520px;
+  border-radius: var(--radius); overflow: hidden;
+  background: #111; box-shadow: var(--shadow);
+  aspect-ratio: 4/3;
+}
+#webcamVideo {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.webcam-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; background: rgba(26,13,4,0.7);
+}
+.webcam-overlay.hidden { display: none; }
+.webcam-overlay p { color: rgba(255,255,255,0.75); font-size: 0.88rem; }
+.webcam-corner {
+  position: absolute;
+  width: 28px; height: 28px;
+  border-color: var(--amber); border-style: solid; border-width: 0;
+  pointer-events: none;
+}
+.webcam-corner.tl { top: 12px; left: 12px; border-top-width: 3px; border-left-width: 3px; border-radius: 4px 0 0 0; }
+.webcam-corner.tr { top: 12px; right: 12px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 4px 0 0; }
+.webcam-corner.bl { bottom: 12px; left: 12px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 4px; }
+.webcam-corner.br { bottom: 12px; right: 12px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 4px 0; }
+.webcam-snap-flash {
+  position: absolute; inset: 0; background: white;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.05s;
+}
+.webcam-snap-flash.flash { opacity: 0.7; }
+
+.webcam-controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.webcam-btn {
+  padding: 13px 24px; border-radius: 10px;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  border: none; font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+}
+.webcam-btn-start { background: var(--amber); color: white; }
+.webcam-btn-start:hover { background: var(--brown); }
+.webcam-btn-snap  { background: var(--brown); color: white; }
+.webcam-btn-snap:hover  { background: var(--amber); transform: translateY(-1px); }
+.webcam-btn-snap:disabled { background: var(--muted2); cursor: not-allowed; transform: none; }
+.webcam-btn-stop  { background: none; border: 1.5px solid var(--muted2); color: var(--muted); }
+.webcam-btn-stop:hover  { border-color: var(--red); color: var(--red); }
+.webcam-btn-flip  { background: none; border: 1.5px solid var(--warm2); color: var(--brown2); }
+.webcam-btn-flip:hover  { border-color: var(--amber); color: var(--amber); }
+
+.webcam-hint {
+  font-size: 0.82rem; color: var(--muted); text-align: center;
+  background: var(--warm); padding: 10px 18px; border-radius: 8px;
+  max-width: 520px; width: 100%;
+}
+.webcam-snapshot-wrap {
+  display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%;
+}
+.webcam-snapshot-wrap.visible { display: flex; }
+.webcam-snapshot-preview {
+  width: 100%; max-width: 520px;
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  object-fit: cover;
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+  .header { padding: 0 16px; }
+  .hero { padding: 50px 16px 30px; }
+  .main { padding: 0 16px 60px; }
+  .result-header-card { flex-direction: column; }
+  .result-confidence-wrap { align-items: flex-start; }
+  .info-grid { grid-template-columns: 1fr; }
+  .food-cols { grid-template-columns: 1fr; }
+  .hero-stats { gap: 20px; }
+}
+
+
+/* ── HISTORY TAB ── */
+.history-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+}
+.history-header-left { display: flex; flex-direction: column; gap: 2px; }
+.history-count {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem; font-weight: 700; color: var(--brown);
+}
+.history-subtitle { color: var(--muted2); font-size: 0.78rem; }
+.history-clear-btn {
+  background: none; border: 1.5px solid var(--muted2);
+  color: var(--muted); padding: 8px 16px;
+  border-radius: 8px; font-size: 0.82rem; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+}
+.history-clear-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+.history-empty {
+  text-align: center; padding: 60px 20px;
+  display: none;
+}
+.history-empty.visible { display: block; }
+.history-empty-icon {
+  font-size: 3.5rem;
+  animation: paw-bounce 1.2s ease-in-out infinite alternate;
+  display: inline-block; margin-bottom: 16px;
+}
+.history-empty h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; color: var(--brown); margin-bottom: 8px;
+}
+.history-empty p { color: var(--muted); font-size: 0.9rem; max-width: 340px; margin: 0 auto; }
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.history-card {
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s;
+  border: 2px solid transparent;
+  animation: card-slide-in 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+  position: relative;
+}
+.history-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--amber);
+}
+@keyframes card-slide-in {
+  from { opacity: 0; transform: translateY(28px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.history-card-img-wrap {
+  position: relative;
+  width: 100%; aspect-ratio: 1;
+  background: var(--warm);
+  overflow: hidden;
+}
+.history-card-img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.history-card:hover .history-card-img { transform: scale(1.08); }
+
+.history-card-emoji {
+  position: absolute;
+  top: 8px; left: 8px;
+  font-size: 1.6rem;
+  background: rgba(255,255,255,0.88);
+  border-radius: 50%;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  animation: emoji-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+}
+@keyframes emoji-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+.history-conf-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: var(--amber);
+  color: white; font-weight: 700; font-size: 0.75rem;
+  padding: 3px 9px; border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(201,124,42,0.35);
+}
+.history-conf-badge.high  { background: #2d8f2a; }
+.history-conf-badge.med   { background: var(--amber); }
+.history-conf-badge.low   { background: #b05020; }
+
+.history-card-body { padding: 12px 14px; }
+.history-card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--brown); line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.history-card-meta {
+  font-size: 0.75rem; color: var(--muted2); margin-top: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.history-card-time {
+  font-size: 0.7rem; color: var(--muted2);
+  margin-top: 8px; display: flex; align-items: center; gap: 4px;
+}
+.history-card-time::before { content: '🕐'; font-size: 0.65rem; }
+
+.history-card-footer {
+  padding: 0 14px 12px;
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.history-alt-chip {
+  background: var(--cream); border: 1px solid var(--warm2);
+  border-radius: 6px; padding: 2px 8px;
+  font-size: 0.68rem; color: var(--muted); font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Delete button on card */
+.history-card-del {
+  position: absolute; bottom: 8px; right: 8px;
+  background: none; border: none; cursor: pointer;
+  font-size: 0.85rem; opacity: 0; transition: opacity 0.2s;
+  padding: 4px 6px; border-radius: 6px;
+  color: var(--muted);
+}
+.history-card:hover .history-card-del { opacity: 1; }
+.history-card-del:hover { background: var(--red-bg); color: var(--red); }
+
+/* Removing animation */
+.history-card.removing {
+  animation: card-remove 0.35s cubic-bezier(0.4,0,1,1) forwards !important;
+}
+@keyframes card-remove {
+  to { opacity: 0; transform: scale(0.8) translateY(10px); }
+}
+
+/* Notification toast */
+.history-toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--brown); color: white;
+  padding: 12px 24px; border-radius: 40px;
+  font-size: 0.88rem; font-weight: 600;
+  box-shadow: var(--shadow-lg); z-index: 500;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none; white-space: nowrap;
+}
+.history-toast.show { transform: translateX(-50%) translateY(0); }
+
+/* History tab badge on button */
+.history-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--amber); color: white;
+  border-radius: 50%; width: 16px; height: 16px;
+  font-size: 0.6rem; font-weight: 700;
+  margin-left: 5px; vertical-align: middle;
+  animation: badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes badge-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+
+/* ══════════════════════════════════════════
+   PAWID CHATBOT
+══════════════════════════════════════════ */
+#chat-fab {
+  position: fixed;
+  bottom: 30px; right: 30px;
+  width: 62px; height: 62px;
+  background: linear-gradient(135deg, var(--brown) 0%, var(--brown2) 100%);
+  border-radius: 50%;
+  box-shadow: 0 6px 28px rgba(74,46,18,0.45);
+  cursor: pointer; border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  z-index: 400;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s;
+  animation: fab-entrance 0.6s cubic-bezier(0.34,1.56,0.64,1) 1.5s both;
+}
+@keyframes fab-entrance {
+  from { transform: scale(0) rotate(-180deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+#chat-fab:hover {
+  transform: scale(1.12);
+  box-shadow: 0 10px 36px rgba(74,46,18,0.55);
+}
+#chat-fab .fab-pulse {
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  animation: fab-ring 2.4s ease-out infinite;
+  opacity: 0;
+}
+@keyframes fab-ring {
+  0%   { transform: scale(0.85); opacity: 0.7; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+.fab-badge {
+  position: absolute; top: -3px; right: -3px;
+  background: var(--amber); color: white;
+  font-size: 0.6rem; font-weight: 700;
+  border-radius: 50%; width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--cream);
+  animation: badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* Chat window */
+#chat-window {
+  position: fixed;
+  bottom: 108px; right: 30px;
+  width: 380px;
+  max-height: 560px;
+  background: var(--cream);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(74,46,18,0.25), 0 0 0 1px rgba(74,46,18,0.08);
+  display: flex; flex-direction: column;
+  z-index: 400;
+  overflow: hidden;
+  transform: scale(0.85) translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: bottom right;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+}
+#chat-window.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Chat header */
+.chat-header {
+  background: linear-gradient(135deg, var(--brown) 0%, #2d1a08 100%);
+  padding: 16px 18px;
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.chat-header-avatar {
+  width: 40px; height: 40px;
+  background: var(--amber);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(232,168,75,0.3);
+}
+.chat-header-info { flex: 1; min-width: 0; }
+.chat-header-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--amber2); line-height: 1.2;
+}
+.chat-header-sub {
+  font-size: 0.72rem; color: rgba(255,255,255,0.55);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-header-close {
+  background: none; border: none; color: rgba(255,255,255,0.5);
+  font-size: 1.2rem; cursor: pointer; padding: 4px;
+  border-radius: 6px; transition: all 0.15s; flex-shrink: 0;
+}
+.chat-header-close:hover { background: rgba(255,255,255,0.1); color: white; }
+
+/* Breed context pill */
+.chat-breed-ctx {
+  background: var(--warm); border-bottom: 1px solid var(--warm2);
+  padding: 8px 16px;
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+  font-size: 0.78rem; color: var(--brown2);
+  animation: ctx-slide 0.3s ease;
+}
+@keyframes ctx-slide {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.chat-breed-ctx-pill {
+  background: var(--amber); color: white;
+  padding: 2px 10px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 700;
+  white-space: nowrap;
+}
+.chat-breed-ctx-none { color: var(--muted2); font-style: italic; }
+
+/* Messages area */
+.chat-messages {
+  flex: 1; overflow-y: auto;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--warm2); border-radius: 4px; }
+
+/* Message bubbles */
+.chat-msg {
+  display: flex; gap: 8px; align-items: flex-end;
+  animation: msg-in 0.3s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.chat-msg.user { flex-direction: row-reverse; }
+
+.chat-msg-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; flex-shrink: 0;
+  background: var(--warm2);
+}
+.chat-msg.bot  .chat-msg-avatar { background: var(--amber); }
+.chat-msg.user .chat-msg-avatar { background: var(--brown); color: white; font-size: 0.75rem; }
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--dark);
+  word-break: break-word;
+}
+.chat-msg.bot  .chat-bubble {
+  background: white;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(74,46,18,0.08);
+}
+.chat-msg.user .chat-bubble {
+  background: var(--brown);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+/* Typing indicator */
+.chat-typing .chat-bubble {
+  padding: 12px 16px;
+  display: flex; gap: 4px; align-items: center;
+}
+.typing-dot {
+  width: 7px; height: 7px;
+  background: var(--muted2); border-radius: 50%;
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0);   opacity: 0.4; }
+  30%           { transform: translateY(-6px); opacity: 1; }
+}
+
+/* Quick suggestions */
+.chat-suggestions {
+  padding: 0 12px 10px;
+  display: flex; gap: 6px; flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.chat-sug-chip {
+  background: white; border: 1.5px solid var(--warm2);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 0.75rem; font-weight: 500; color: var(--brown2);
+  cursor: pointer; transition: all 0.18s;
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+}
+.chat-sug-chip:hover { background: var(--amber); color: white; border-color: var(--amber); }
+
+/* Input area */
+.chat-input-row {
+  padding: 12px;
+  background: white;
+  border-top: 1px solid var(--warm);
+  display: flex; gap: 8px; align-items: flex-end;
+  flex-shrink: 0;
+}
+.chat-input {
+  flex: 1;
+  border: 1.5px solid var(--warm2);
+  border-radius: 20px;
+  padding: 9px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  color: var(--dark);
+  resize: none; outline: none;
+  transition: border-color 0.2s;
+  max-height: 100px;
+  line-height: 1.4;
+  background: var(--cream);
+}
+.chat-input:focus { border-color: var(--amber); background: white; }
+.chat-send-btn {
+  width: 38px; height: 38px;
+  background: var(--brown); color: white;
+  border: none; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+  transition: all 0.2s; align-self: flex-end;
+}
+.chat-send-btn:hover  { background: var(--amber); transform: scale(1.08); }
+.chat-send-btn:disabled { background: var(--muted2); cursor: not-allowed; transform: none; }
+
+@media (max-width: 480px) {
+  #chat-window { width: calc(100vw - 24px); right: 12px; bottom: 90px; }
+  #chat-fab    { right: 16px; bottom: 20px; }
+}
+
+/* ── 3D ANIMATED BACKGROUND ── */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.float-paw {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  animation: paw-drift linear infinite;
+}
+@keyframes paw-drift {
+  0%   { transform: translateY(0px) rotate(0deg) scale(1);   opacity: 0; }
+  8%   { opacity: 0.22; }
+  90%  { opacity: 0.10; }
+  100% { transform: translateY(-110vh) rotate(360deg) scale(0.5); opacity: 0; }
+}
+#neural-canvas {
+  position: absolute;
+  inset: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+.hero { position: relative; isolation: isolate; }
+.hero > * { position: relative; z-index: 1; }
+.glow-blob {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(90px);
+  animation: blob-drift ease-in-out infinite alternate;
+}
+@keyframes blob-drift {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(35px,25px) scale(1.1); }
+}
+.side-silhouette {
+  position: fixed;
+  top: 50%; transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  animation: silhouette-appear 2s ease forwards;
+}
+.side-silhouette.left  { left: 20px; animation-delay: 0.5s; }
+.side-silhouette.right { right: 20px; animation-delay: 0.9s; }
+@keyframes silhouette-appear {
+  from { opacity: 0; transform: translateY(-45%) scale(0.95); }
+  to   { opacity: 0.055; transform: translateY(-50%) scale(1); }
+}
+.header { z-index: 200; position: relative; }
+.main   { position: relative; z-index: 2; }
+
+/* ════════════════════════════════════════
+   PREMIUM ANIMATIONS
+════════════════════════════════════════ */
+
+/* Custom paw cursor */
+*, *::before, *::after { cursor: none !important; }
+#paw-cursor {
+  position: fixed; pointer-events: none; z-index: 9999;
+  width: 28px; height: 28px;
+  transform: translate(-50%, -50%);
+  transition: transform 0.12s ease, opacity 0.2s;
+  font-size: 1.3rem; line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(74,46,18,0.4));
+}
+#paw-cursor.clicking { transform: translate(-50%,-50%) scale(0.7) rotate(-20deg); }
+#cursor-dot {
+  position: fixed; pointer-events: none; z-index: 9998;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--amber); opacity: 0.6;
+  transform: translate(-50%,-50%);
+  transition: transform 0.06s linear;
+}
+
+/* Cursor trail paws */
+.trail-paw {
+  position: fixed; pointer-events: none; z-index: 9997;
+  font-size: 0.85rem; opacity: 0;
+  transform: translate(-50%,-50%);
+  animation: trail-fade 0.7s ease forwards;
+}
+@keyframes trail-fade {
+  0%   { opacity: 0.55; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
+  100% { opacity: 0;    transform: translate(-50%,-70%) scale(0.4) rotate(30deg); }
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1),
+              transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left  { transform: translateX(-40px); }
+.reveal-right { transform: translateX(40px); }
+.reveal-left.visible, .reveal-right.visible { transform: translateX(0); }
+
+/* Staggered reveal for info cards */
+.info-card {
+  opacity: 0;
+  transform: translateY(24px) scale(0.97);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.4,0.64,1),
+              background 0.2s;
+}
+.info-card.card-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Hero stat counter animation */
+.hero-stat-num {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.hero-stat-num.counting { transform: scale(1.15); color: var(--amber2); }
+
+/* Result panel entrance — slide up with spring */
+.result-panel.visible {
+  animation: result-entrance 0.6s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+@keyframes result-entrance {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Confidence badge pop */
+.confidence-badge {
+  animation: conf-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.4s both;
+}
+@keyframes conf-pop {
+  from { transform: scale(0) rotate(-10deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);  opacity: 1; }
+}
+
+/* Result header shimmer */
+.result-header-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none; border-radius: inherit;
+}
+.result-header-card { position: relative; overflow: hidden; }
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Upload panel hover glow */
+.upload-panel {
+  transition: box-shadow 0.35s ease;
+}
+.upload-panel:focus-within {
+  box-shadow: 0 0 0 3px rgba(201,124,42,0.2), var(--shadow);
+}
+
+/* Tab switching morph */
+.tab-content {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.tab-content:not(.active) {
+  opacity: 0; transform: translateY(6px); pointer-events: none;
+  position: absolute; visibility: hidden;
+}
+.tab-content.active {
+  opacity: 1; transform: translateY(0);
+  position: relative; visibility: visible;
+}
+
+/* Detect button pulse when ready */
+.detect-btn:not(:disabled) {
+  animation: detect-ready 2.5s ease-in-out infinite;
+}
+@keyframes detect-ready {
+  0%, 100% { box-shadow: 0 4px 15px rgba(74,46,18,0.2); }
+  50%       { box-shadow: 0 4px 25px rgba(201,124,42,0.45); }
+}
+
+/* Meter fill glow */
+.mf-green  { box-shadow: 0 0 8px rgba(45,143,42,0.4); }
+.mf-amber  { box-shadow: 0 0 8px rgba(201,124,42,0.4); }
+.mf-red    { box-shadow: 0 0 8px rgba(192,32,32,0.35); }
+.mf-blue   { box-shadow: 0 0 8px rgba(30,58,110,0.35); }
+
+/* Loading paw enhanced */
+.paw-anim {
+  animation: paw-bounce 0.7s infinite alternate,
+             paw-rotate 3s linear infinite;
+}
+@keyframes paw-rotate {
+  0%   { filter: hue-rotate(0deg); }
+  50%  { filter: hue-rotate(20deg); }
+  100% { filter: hue-rotate(0deg); }
+}
+
+/* Breed chip hover ripple */
+.breed-chip {
+  position: relative; overflow: hidden;
+}
+.breed-chip::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, transparent 70%);
+  opacity: 0; transform: scale(0);
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+.breed-chip:hover::after {
+  opacity: 1; transform: scale(2.5);
+}
+
+/* Alt chip hover */
+.alt-chip {
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.alt-chip:hover { transform: translateY(-3px) scale(1.05); }
+
+/* Header logo breathing glow */
+.header-logo {
+  animation: logo-glow 4s ease-in-out infinite alternate;
+}
+@keyframes logo-glow {
+  from { text-shadow: none; }
+  to   { text-shadow: 0 0 20px rgba(232,168,75,0.35); }
+}
+
+/* FAB enhanced pulse */
+#chat-fab .fab-pulse {
+  animation: fab-ring 2s ease-out infinite;
+}
+
+/* History card hover — 3D tilt */
+.history-card {
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.3s, border-color 0.3s;
+}
+
+/* India score bar special animation */
+.india-bar-wrap .meter-fill {
+  background: linear-gradient(90deg, #f4a020, #f0d040, #f4a020);
+  background-size: 200% 100%;
+  animation: india-shimmer 2s linear infinite;
+}
+@keyframes india-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Page load entrance */
+.header {
+  animation: header-drop 0.5s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+@keyframes header-drop {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+.hero {
+  animation: hero-rise 0.7s cubic-bezier(0.22,1,0.36,1) 0.2s both;
+}
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.upload-panel {
+  animation: panel-rise 0.7s cubic-bezier(0.22,1,0.36,1) 0.4s both;
+}
+@keyframes panel-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Ripple on buttons */
+.drop-btn, .detect-btn, .webcam-btn {
+  position: relative; overflow: hidden;
+}
+.btn-ripple {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  transform: scale(0); animation: ripple-out 0.55s linear;
+  pointer-events: none;
+}
+@keyframes ripple-out {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════
+   PREMIUM ENHANCEMENTS — ULTRA UPGRADE PACK
+═══════════════════════════════════════════════ */
+
+/* ── GLASSMORPHISM HEADER ── */
+.header {
+  background: rgba(42, 18, 6, 0.82) !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(201,124,42,0.2);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(232,168,75,0.15) !important;
+}
+.header-logo {
+  background: linear-gradient(135deg, var(--amber2) 0%, #fff5d6 50%, var(--amber) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: logo-glow 4s ease-in-out infinite alternate !important;
+  filter: drop-shadow(0 0 12px rgba(232,168,75,0.4));
+}
+.header-logo span {
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.75) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+@keyframes logo-glow {
+  from { filter: drop-shadow(0 0 6px rgba(232,168,75,0.3)); }
+  to   { filter: drop-shadow(0 0 22px rgba(232,168,75,0.7)); }
+}
+
+/* ── HOLOGRAPHIC MODEL BADGE IN HEADER ── */
+.header-model-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(232,168,75,0.3);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 0.7rem; color: rgba(255,255,255,0.65);
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 0.3px;
+  transition: all 0.3s;
+}
+.header-model-badge:hover {
+  background: rgba(232,168,75,0.12);
+  border-color: var(--amber);
+  color: var(--amber2);
+}
+
+/* ── ADVANCED HERO ── */
+.hero {
+  padding: 80px 20px 50px;
+  background: transparent;
+}
+.hero-tag {
+  animation: tag-float 3s ease-in-out infinite;
+  background: linear-gradient(135deg, rgba(201,124,42,0.15), rgba(232,168,75,0.08));
+  border: 1px solid rgba(201,124,42,0.3);
+  backdrop-filter: blur(10px);
+}
+@keyframes tag-float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.hero h1 {
+  background: linear-gradient(135deg, var(--brown) 0%, var(--brown2) 40%, var(--amber) 70%, var(--amber2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+}
+.hero h1 em {
+  background: linear-gradient(135deg, #e8723a, var(--amber), #f0c060);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-style: italic;
+}
+.hero-desc {
+  opacity: 0;
+  animation: desc-rise 0.9s cubic-bezier(0.22,1,0.36,1) 0.6s forwards;
+}
+@keyframes desc-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Animated hero stats */
+.hero-stats {
+  gap: 0;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(201,124,42,0.2);
+  border-radius: 20px;
+  padding: 16px 32px;
+  display: inline-flex;
+  margin-top: 32px;
+  box-shadow: 0 8px 32px rgba(74,46,18,0.10), inset 0 1px 0 rgba(255,255,255,0.8);
+  animation: stats-rise 0.9s cubic-bezier(0.22,1,0.36,1) 0.8s both;
+}
+@keyframes stats-rise {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.hero-stat {
+  padding: 0 28px;
+  border-right: 1px solid rgba(201,124,42,0.2);
+  position: relative;
+}
+.hero-stat:last-child { border-right: none; }
+.hero-stat-num {
+  background: linear-gradient(135deg, var(--amber), var(--amber2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.2rem;
+}
+
+/* ── GLASS UPLOAD PANEL ── */
+.upload-panel {
+  background: rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(201,124,42,0.15);
+  box-shadow: 0 20px 60px rgba(74,46,18,0.12), 0 1px 0 rgba(255,255,255,0.9) inset !important;
+}
+.upload-panel-tabs {
+  background: rgba(253,248,242,0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(201,124,42,0.15) !important;
+}
+.upload-tab {
+  font-size: 0.83rem;
+  letter-spacing: 0.2px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.34,1.2,0.64,1) !important;
+}
+.upload-tab.active {
+  background: transparent !important;
+  color: var(--amber) !important;
+}
+.upload-tab.active::after {
+  background: linear-gradient(90deg, var(--amber), var(--amber2)) !important;
+  height: 3px !important;
+  border-radius: 3px 3px 0 0 !important;
+}
+.upload-tab:hover:not(.active) {
+  color: var(--brown2) !important;
+  background: rgba(201,124,42,0.05) !important;
+}
+
+/* ── PREMIUM DROP ZONE ── */
+.drop-zone {
+  border: 2px dashed transparent !important;
+  background: 
+    linear-gradient(var(--cream), var(--cream)) padding-box,
+    linear-gradient(135deg, var(--amber), var(--amber2), #c97c2a) border-box !important;
+  position: relative; overflow: hidden;
+}
+.drop-zone::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(201,124,42,0.05), transparent 70%);
+  transition: opacity 0.4s;
+  opacity: 0;
+}
+.drop-zone:hover::before, .drop-zone.drag-over::before { opacity: 1; }
+.drop-zone:hover, .drop-zone.drag-over {
+  background:
+    linear-gradient(var(--warm), var(--warm)) padding-box,
+    linear-gradient(135deg, var(--brown), var(--amber), var(--amber2)) border-box !important;
+  transform: translateY(-3px) scale(1.005) !important;
+  box-shadow: 0 16px 48px rgba(201,124,42,0.2) !important;
+}
+.drop-icon {
+  display: block;
+  font-size: 3.2rem;
+  margin-bottom: 16px;
+  animation: paw-float 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(201,124,42,0.3));
+}
+@keyframes paw-float {
+  0%,100% { transform: translateY(0) rotate(-5deg); }
+  50%      { transform: translateY(-10px) rotate(5deg); }
+}
+.drop-btn {
+  background: linear-gradient(135deg, var(--amber) 0%, var(--amber2) 50%, #e09030 100%) !important;
+  background-size: 200% 100% !important;
+  box-shadow: 0 4px 20px rgba(201,124,42,0.4) !important;
+  transition: all 0.35s cubic-bezier(0.34,1.2,0.64,1) !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+}
+.drop-btn:hover {
+  background: linear-gradient(135deg, var(--brown2) 0%, var(--brown) 100%) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 8px 28px rgba(74,46,18,0.4) !important;
+}
+
+/* ── DETECT BUTTON — PREMIUM GLOW ── */
+.detect-btn {
+  background: linear-gradient(135deg, var(--brown) 0%, #3d1e08 100%) !important;
+  box-shadow: 0 4px 18px rgba(74,46,18,0.35) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  transition: all 0.35s cubic-bezier(0.34,1.2,0.64,1) !important;
+  position: relative; overflow: hidden;
+}
+.detect-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(232,168,75,0.15) 100%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.detect-btn:not(:disabled):hover {
+  background: linear-gradient(135deg, var(--amber2) 0%, var(--amber) 100%) !important;
+  transform: translateY(-2px) scale(1.04) !important;
+  box-shadow: 0 10px 32px rgba(201,124,42,0.5) !important;
+}
+.detect-btn:not(:disabled):hover::before { opacity: 1; }
+
+/* ── LOADING PANEL — CINEMATIC ── */
+.loading-panel {
+  background: linear-gradient(145deg, rgba(255,255,255,0.97), rgba(253,248,242,0.98)) !important;
+  border: 1px solid rgba(201,124,42,0.12);
+  box-shadow: 0 24px 80px rgba(74,46,18,0.14) !important;
+  position: relative; overflow: hidden;
+}
+.loading-panel::before {
+  content: '';
+  position: absolute; top: 0; left: -100%;
+  width: 100%; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--amber), var(--amber2), transparent);
+  animation: scan-line 2.5s ease-in-out infinite;
+}
+@keyframes scan-line {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+.paw-anim {
+  font-size: 4rem !important;
+  filter: drop-shadow(0 6px 16px rgba(201,124,42,0.4));
+  animation: paw-bounce-premium 0.6s cubic-bezier(0.34,1.56,0.64,1) infinite alternate !important;
+}
+@keyframes paw-bounce-premium {
+  from { transform: translateY(0) scale(1) rotate(-8deg); }
+  to   { transform: translateY(-22px) scale(1.12) rotate(8deg); }
+}
+.progress-bar {
+  width: 280px !important; height: 6px !important;
+  background: var(--warm) !important;
+  border-radius: 6px !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06) !important;
+}
+.progress-fill {
+  background: linear-gradient(90deg, var(--amber), var(--amber2), #f0c060, var(--amber)) !important;
+  background-size: 300% 100% !important;
+  animation: prog-premium 2s ease-in-out infinite !important;
+}
+@keyframes prog-premium {
+  0%   { width: 0%;   margin-left: 0;    background-position: 0% 50%; }
+  50%  { width: 100%; margin-left: 0;    background-position: 100% 50%; }
+  100% { width: 0%;   margin-left: 100%; background-position: 200% 50%; }
+}
+
+/* ── RESULT HEADER — LUXURY DARK CARD ── */
+.result-header-card {
+  background: linear-gradient(135deg, #1a0d04 0%, #2d1408 40%, #3d1e0a 70%, #1a0d04 100%) !important;
+  position: relative; overflow: hidden;
+}
+.result-header-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(201,124,42,0.25), transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(232,168,75,0.15), transparent 50%);
+  pointer-events: none;
+}
+.result-header-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232,168,75,0.6), transparent);
+}
+.result-breed-name {
+  background: linear-gradient(135deg, var(--amber2) 0%, #fff8e0 50%, var(--amber) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: name-shimmer 4s ease infinite;
+  background-size: 200% 100%;
+}
+@keyframes name-shimmer {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.confidence-badge {
+  background: linear-gradient(135deg, var(--amber) 0%, var(--amber2) 100%) !important;
+  box-shadow: 0 4px 20px rgba(201,124,42,0.6), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  animation: badge-pulse 2s ease-in-out infinite !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 1.5rem !important;
+}
+@keyframes badge-pulse {
+  0%,100% { box-shadow: 0 4px 20px rgba(201,124,42,0.5); transform: scale(1); }
+  50%      { box-shadow: 0 8px 32px rgba(201,124,42,0.8); transform: scale(1.03); }
+}
+
+/* ── INFO CARDS — GLASSMORPHISM ── */
+.info-grid {
+  background: rgba(255,255,255,0.95) !important;
+}
+.info-card {
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.34,1.2,0.64,1) !important;
+  background: transparent;
+  overflow: hidden;
+}
+.info-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(201,124,42,0.04), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.info-card:hover {
+  background: linear-gradient(135deg, rgba(253,248,242,0.98), rgba(245,233,216,0.6)) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(74,46,18,0.08);
+  z-index: 2;
+}
+.info-card:hover::before { opacity: 1; }
+.ic-icon {
+  font-size: 1.8rem !important;
+  display: inline-block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.info-card:hover .ic-icon { transform: scale(1.2) rotate(5deg); }
+.ic-label {
+  font-family: 'Space Mono', monospace !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 1.8px !important;
+  background: linear-gradient(90deg, var(--muted2), var(--amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── METER BARS — ANIMATED ── */
+.meter-bar {
+  height: 8px !important;
+  background: linear-gradient(90deg, var(--warm), var(--warm2)) !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05) !important;
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  border-radius: 8px !important;
+  transition: width 1.4s cubic-bezier(0.22,1,0.36,1) !important;
+  position: relative;
+}
+.meter-fill::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  animation: shimmer-sweep 2.5s ease-in-out infinite;
+}
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.mf-green  { background: linear-gradient(90deg, #1a7a18, #3db83a, #6ee06b) !important; }
+.mf-amber  { background: linear-gradient(90deg, #b56820, var(--amber), var(--amber2)) !important; }
+.mf-red    { background: linear-gradient(90deg, #9c1a1a, #d43030, #f07070) !important; }
+.mf-blue   { background: linear-gradient(90deg, #0e2857, #2455a4, #5a90e0) !important; }
+
+/* ── TAGS — PREMIUM PILL STYLE ── */
+.tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 4px 11px;
+  letter-spacing: 0.2px;
+  transition: all 0.25s cubic-bezier(0.34,1.4,0.64,1);
+  cursor: default;
+}
+.tag:hover { transform: translateY(-2px) scale(1.05); }
+.tag-green  { background: linear-gradient(135deg, #e0f5df, #c5edbe); color: #1a5c18; border: 1px solid rgba(45,90,42,0.15); }
+.tag-red    { background: linear-gradient(135deg, #fceaea, #f5d5d5); color: #8c1818; border: 1px solid rgba(122,32,32,0.12); }
+.tag-blue   { background: linear-gradient(135deg, #e5edfa, #cfe0f5); color: #1a326a; border: 1px solid rgba(30,58,110,0.12); }
+.tag-amber  { background: linear-gradient(135deg, #fef3d0, #fde8aa); color: #7a4200; border: 1px solid rgba(201,124,42,0.2); }
+.tag-brown  { background: linear-gradient(135deg, #eeddcc, #e0cdb8); color: var(--brown2); border: 1px solid rgba(74,46,18,0.12); }
+
+/* ── ALTERNATIVES ── */
+.alternatives {
+  background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(253,248,242,0.97)) !important;
+  border-top: 1px solid rgba(201,124,42,0.1) !important;
+}
+.alt-chip {
+  background: linear-gradient(135deg, var(--cream), rgba(245,233,216,0.6)) !important;
+  border: 1px solid rgba(201,124,42,0.18) !important;
+  transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1) !important;
+  box-shadow: 0 2px 8px rgba(74,46,18,0.05);
+}
+.alt-chip:hover {
+  background: linear-gradient(135deg, var(--amber), var(--amber2)) !important;
+  transform: translateY(-4px) scale(1.08) !important;
+  box-shadow: 0 8px 24px rgba(201,124,42,0.4) !important;
+  border-color: transparent !important;
+}
+
+/* ── HISTORY CARDS — ENHANCED ── */
+.history-card {
+  background: rgba(255,255,255,0.9) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(201,124,42,0.1) !important;
+}
+.history-card:hover {
+  border-color: var(--amber) !important;
+  box-shadow: 0 16px 48px rgba(74,46,18,0.16), 0 0 0 3px rgba(201,124,42,0.08) !important;
+}
+
+/* ── BREED CHIPS — ENHANCED ── */
+.breed-chip {
+  border: 1px solid rgba(201,124,42,0.2) !important;
+  transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1) !important;
+}
+.breed-chip:hover {
+  background: linear-gradient(135deg, var(--amber), var(--amber2)) !important;
+  transform: translateY(-4px) scale(1.06) !important;
+  box-shadow: 0 8px 24px rgba(201,124,42,0.4) !important;
+}
+.breed-chip.indian {
+  background: linear-gradient(135deg, #fff9ee, #fef3d0) !important;
+  border-color: rgba(244,160,32,0.35) !important;
+}
+.breed-chip.indian:hover {
+  background: linear-gradient(135deg, #f4a020, #e89020) !important;
+}
+
+/* ── CHATBOT FAB — PREMIUM ── */
+#chat-fab {
+  background: linear-gradient(135deg, #2d1408 0%, var(--brown2) 50%, var(--brown) 100%) !important;
+  box-shadow: 0 8px 32px rgba(74,46,18,0.55), 0 0 0 3px rgba(201,124,42,0.2) !important;
+}
+#chat-fab:hover {
+  box-shadow: 0 14px 44px rgba(74,46,18,0.65), 0 0 0 5px rgba(201,124,42,0.25) !important;
+  transform: scale(1.15) rotate(5deg) !important;
+}
+
+/* ── CHAT WINDOW — GLASSMORPHISM ── */
+#chat-window {
+  background: rgba(253,248,242,0.95) !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(201,124,42,0.15) !important;
+  box-shadow: 0 24px 80px rgba(74,46,18,0.28), 0 0 0 1px rgba(255,255,255,0.4) inset !important;
+}
+.chat-header {
+  background: linear-gradient(135deg, #1a0d04 0%, #2d1408 60%, #3d1e0a 100%) !important;
+  border-bottom: 1px solid rgba(232,168,75,0.2);
+}
+.chat-msg.bot .chat-bubble {
+  background: rgba(255,255,255,0.9) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(201,124,42,0.1);
+}
+.chat-msg.user .chat-bubble {
+  background: linear-gradient(135deg, var(--brown) 0%, #2d1408 100%) !important;
+  box-shadow: 0 4px 16px rgba(74,46,18,0.3);
+}
+.chat-sug-chip {
+  transition: all 0.25s cubic-bezier(0.34,1.4,0.64,1) !important;
+}
+.chat-sug-chip:hover {
+  background: linear-gradient(135deg, var(--amber), var(--amber2)) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 6px 18px rgba(201,124,42,0.4) !important;
+}
+.chat-send-btn {
+  background: linear-gradient(135deg, var(--brown) 0%, #2d1408 100%) !important;
+  box-shadow: 0 4px 14px rgba(74,46,18,0.3) !important;
+}
+.chat-send-btn:hover {
+  background: linear-gradient(135deg, var(--amber), var(--amber2)) !important;
+  box-shadow: 0 8px 24px rgba(201,124,42,0.5) !important;
+}
+.chat-input:focus {
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 0 3px rgba(201,124,42,0.15) !important;
+  background: white !important;
+}
+
+/* ── PARTICLE BURST ON DETECT ── */
+.particle-burst {
+  position: fixed; pointer-events: none; z-index: 9999;
+}
+.particle-burst span {
+  position: absolute;
+  font-size: 1.2rem;
+  animation: burst-fly 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes burst-fly {
+  0%   { transform: translate(0,0) scale(0); opacity: 1; }
+  80%  { opacity: 0.8; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.3); opacity: 0; }
+}
+
+/* ── RESULT REVEAL ANIMATION ── */
+.result-panel {
+  animation: none;
+}
+.result-panel.visible {
+  animation: result-appear 0.7s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes result-appear {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.result-header-card .result-breed-emoji {
+  animation: emoji-bounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+}
+@keyframes emoji-bounce {
+  from { transform: scale(0) rotate(-20deg); }
+  to   { transform: scale(1) rotate(0deg); }
+}
+
+/* ── INDIA SUITABILITY — TRICOLOR SHIMMER ── */
+.india-bar-wrap {
+  background: linear-gradient(135deg, rgba(255,153,0,0.08), rgba(255,255,255,0.95), rgba(19,136,8,0.08)) !important;
+  border-left: 4px solid transparent !important;
+  border-image: linear-gradient(180deg, #FF9933, #FFFFFF, #138808) 1 !important;
+  position: relative; overflow: hidden;
+}
+.india-bar-wrap::before {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+  background: linear-gradient(90deg, rgba(255,153,0,0.04), transparent 30%, transparent 70%, rgba(19,136,8,0.04));
+  pointer-events: none;
+}
+.india-score-num {
+  background: linear-gradient(135deg, #FF9933, var(--amber), #138808);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── PREVIEW IMAGE — FANCY FRAME ── */
+.preview-img {
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(74,46,18,0.2), 0 0 0 3px rgba(201,124,42,0.15) !important;
+  transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1) !important;
+  object-fit: cover;
+}
+.preview-wrap.visible .preview-img {
+  animation: img-reveal 0.5s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+@keyframes img-reveal {
+  from { transform: scale(0.85) rotate(-3deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.preview-img:hover { transform: scale(1.03) rotate(1deg) !important; }
+
+/* ── SEARCH INPUT — PREMIUM ── */
+.browse-search input {
+  border: 2px solid rgba(201,124,42,0.2) !important;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s !important;
+  box-shadow: 0 2px 12px rgba(74,46,18,0.06) !important;
+}
+.browse-search input:focus {
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 0 4px rgba(201,124,42,0.12), 0 4px 16px rgba(74,46,18,0.08) !important;
+  background: white !important;
+}
+
+/* ── SCROLL BAR — CUSTOM ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--amber), var(--amber2));
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--brown2); }
+
+/* ── TOAST — PREMIUM ── */
+.history-toast {
+  background: linear-gradient(135deg, var(--brown) 0%, #2d1408 100%) !important;
+  border: 1px solid rgba(232,168,75,0.3) !important;
+  box-shadow: 0 12px 40px rgba(74,46,18,0.4), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* ── WEBCAM CONTROLS ── */
+.webcam-btn {
+  border-radius: 12px !important;
+  transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1) !important;
+}
+.webcam-btn-start {
+  background: linear-gradient(135deg, var(--amber) 0%, var(--amber2) 100%) !important;
+  box-shadow: 0 4px 16px rgba(201,124,42,0.35) !important;
+}
+.webcam-btn-start:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+  box-shadow: 0 8px 28px rgba(201,124,42,0.5) !important;
+}
+.webcam-btn-snap {
+  background: linear-gradient(135deg, var(--brown) 0%, #2d1408 100%) !important;
+  box-shadow: 0 4px 16px rgba(74,46,18,0.35) !important;
+}
+.webcam-btn-snap:not(:disabled):hover {
+  background: linear-gradient(135deg, var(--amber), var(--amber2)) !important;
+  transform: translateY(-2px) scale(1.04) !important;
+  box-shadow: 0 10px 30px rgba(201,124,42,0.5) !important;
+}
+.webcam-corner {
+  border-color: var(--amber2) !important;
+  filter: drop-shadow(0 0 4px rgba(232,168,75,0.5));
+  animation: corner-pulse 2s ease-in-out infinite !important;
+}
+@keyframes corner-pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* ── CARD VISIBLE ANIMATION ── */
+.info-card {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.2,0.64,1), background 0.2s !important;
+}
+.info-card.card-visible {
+  opacity: 1; transform: translateY(0);
+}
+
+/* ── GRADIENT SCROLLING FOOTER EFFECT ── */
+main::after {
+  content: '';
+  display: block; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  margin-top: 20px;
+  opacity: 0.3;
+}
+
+/* ── BREED SEARCH RESULT HIGHLIGHT ── */
+.breed-chip mark {
+  background: rgba(232,168,75,0.3);
+  border-radius: 3px; padding: 0 2px;
+}
+
+/* ── DEMO BANNER — IMPROVED ── */
+.demo-banner {
+  background: linear-gradient(135deg, #fef8d0, #fef0b0) !important;
+  border: 1px solid rgba(240,192,64,0.5) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(201,160,20,0.15) !important;
+}
+
+/* ── HISTORY HEADER ── */
+.history-header {
+  background: linear-gradient(135deg, rgba(253,248,242,0.9), rgba(245,233,216,0.5));
+  backdrop-filter: blur(8px);
+}
+.history-clear-btn {
+  transition: all 0.25s cubic-bezier(0.34,1.4,0.64,1) !important;
+}
+.history-clear-btn:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+}
+
+/* ── CONFIDENCE BADGE GLOW LEVELS ── */
+.history-conf-badge.high {
+  background: linear-gradient(135deg, #1a7a18, #2d9a2a) !important;
+  box-shadow: 0 2px 12px rgba(45,154,42,0.4) !important;
+}
+.history-conf-badge.med {
+  background: linear-gradient(135deg, var(--amber), var(--amber2)) !important;
+  box-shadow: 0 2px 12px rgba(201,124,42,0.4) !important;
+}
+.history-conf-badge.low {
+  background: linear-gradient(135deg, #9c2020, #c03030) !important;
+  box-shadow: 0 2px 12px rgba(176,32,32,0.4) !important;
+}
+
+/* ── FUN FACTS LIST ── */
+.funfacts-list li::before { content: '✦'; color: var(--amber); }
+.funfacts-list li {
+  transition: all 0.25s;
+  border-radius: 6px; padding: 7px 4px;
+}
+.funfacts-list li:hover {
+  background: rgba(201,124,42,0.05);
+  padding-left: 8px;
+  border-color: transparent !important;
+}
+
+/* ── PULSE STATUS DOT ── */
+.status-dot {
+  box-shadow: 0 0 10px #5cc95c, 0 0 20px rgba(92,201,92,0.4) !important;
+}
+
+/* ── NEURAL CANVAS ENHANCED OPACITY ── */
+#neural-canvas { opacity: 0.5 !important; }
+
+/* ── RESPONSIVE PERFECTION ── */
+@media (max-width: 600px) {
+  .hero h1 { font-size: 2.2rem !important; }
+  .hero-stats { padding: 12px 20px !important; gap: 0 !important; }
+  .hero-stat { padding: 0 14px !important; }
+  .hero-stat-num { font-size: 1.7rem !important; }
+  .result-breed-name { font-size: 1.7rem !important; }
+  .confidence-badge { font-size: 1.1rem !important; }
+}
+
+/* ── SELECTION COLOR ── */
+::selection { background: rgba(201,124,42,0.25); color: var(--brown); }
+
+/* ════════════════════════════════════════
+   NEW FEATURES CSS
+════════════════════════════════════════ */
+
+/* ── CONFIDENCE WARNING BANNER ── */
+.conf-warning {
+  display: none;
+  background: linear-gradient(135deg, #fff8e0, #fef3c0);
+  border: 1.5px solid #f0b840;
+  border-left: 5px solid #e09020;
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  align-items: flex-start; gap: 12px;
+  animation: warning-slide 0.5s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+.conf-warning.visible { display: flex; }
+@keyframes warning-slide {
+  from { opacity:0; transform: translateY(-10px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.conf-warning-icon { font-size: 1.5rem; flex-shrink:0; line-height:1; margin-top:2px; }
+.conf-warning-text h4 { color: #7a5000; font-size: 0.92rem; font-weight: 700; margin-bottom:4px; }
+.conf-warning-text p  { color: #8a6010; font-size: 0.82rem; line-height:1.5; }
+
+/* ── GRAD-CAM SECTION ── */
+.gradcam-section {
+  display: none;
+  background: white;
+  border-top: 1px solid var(--warm);
+  padding: 24px;
+}
+.gradcam-section.visible { display: block; }
+.gradcam-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+.gradcam-header h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; font-weight: 700; color: var(--brown);
+}
+.gradcam-badge {
+  background: linear-gradient(135deg, #1e3a6e, #2a5299);
+  color: white; font-size: 0.65rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  font-family: 'Space Mono', monospace;
+}
+.gradcam-body {
+  display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;
+}
+.gradcam-img-wrap {
+  position: relative; flex-shrink: 0;
+}
+.gradcam-original, .gradcam-heatmap {
+  width: 200px; height: 200px;
+  object-fit: cover; border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: block;
+}
+.gradcam-label {
+  text-align: center; font-size: 0.72rem; color: var(--muted);
+  margin-top: 6px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.gradcam-legend {
+  flex: 1; min-width: 200px;
+}
+.gradcam-legend h5 {
+  font-size: 0.78rem; font-weight: 700; color: var(--brown);
+  margin-bottom: 10px; letter-spacing: 0.3px;
+}
+.gradcam-scale {
+  display: flex; height: 18px; border-radius: 9px; overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.gradcam-scale span {
+  flex: 1;
+}
+.gradcam-scale-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.7rem; color: var(--muted); margin-bottom: 14px;
+}
+.gradcam-explain {
+  font-size: 0.82rem; color: var(--muted); line-height: 1.6;
+  background: var(--cream); border-radius: 10px; padding: 12px 14px;
+  border-left: 3px solid var(--amber);
+}
+
+/* ── ACTION BUTTONS ROW ── */
+.result-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  padding: 16px 22px;
+  background: white;
+  border-top: 1px solid var(--warm);
+}
+.action-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 10px;
+  font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; border: none; font-family: 'DM Sans', sans-serif;
+  transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1);
+}
+.action-btn-pdf {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  color: white;
+  box-shadow: 0 4px 14px rgba(192,57,43,0.3);
+}
+.action-btn-pdf:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 24px rgba(192,57,43,0.45);
+}
+.action-btn-compare {
+  background: linear-gradient(135deg, var(--brown), #2d1408);
+  color: white;
+  box-shadow: 0 4px 14px rgba(74,46,18,0.3);
+}
+.action-btn-compare:hover {
+  background: linear-gradient(135deg, var(--amber), var(--amber2));
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 24px rgba(201,124,42,0.4);
+}
+.action-btn-analytics {
+  background: linear-gradient(135deg, #1e3a6e, #2a5299);
+  color: white;
+  box-shadow: 0 4px 14px rgba(30,58,110,0.3);
+}
+.action-btn-analytics:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 24px rgba(30,58,110,0.45);
+}
+
+/* ── COMPARE MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,13,4,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 600;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.visible { display: flex; }
+.modal-box {
+  background: var(--cream);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  width: 100%; max-width: 860px;
+  max-height: 90vh; overflow-y: auto;
+  animation: modal-pop 0.4s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+@keyframes modal-pop {
+  from { opacity:0; transform: scale(0.88) translateY(20px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.modal-header {
+  background: linear-gradient(135deg, var(--brown) 0%, #2d1408 100%);
+  padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  position: sticky; top: 0; z-index: 1;
+}
+.modal-header h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem; color: var(--amber2);
+}
+.modal-close {
+  background: none; border: none; color: rgba(255,255,255,0.6);
+  font-size: 1.4rem; cursor: pointer; padding: 4px 8px;
+  border-radius: 8px; transition: all 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.1); color: white; }
+.modal-body { padding: 24px; }
+
+/* Compare search row */
+.compare-search-row {
+  display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.compare-input-wrap { flex: 1; min-width: 200px; }
+.compare-input-wrap label {
+  display: block; font-size: 0.75rem; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 6px; font-family: 'Space Mono', monospace;
+}
+.compare-input {
+  width: 100%; padding: 11px 14px;
+  border: 2px solid var(--warm2); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+  color: var(--dark); transition: border-color 0.2s;
+  background: white;
+}
+.compare-input:focus { outline: none; border-color: var(--amber); }
+.compare-btn {
+  align-self: flex-end;
+  background: linear-gradient(135deg, var(--amber), var(--amber2));
+  color: white; border: none; padding: 11px 22px;
+  border-radius: 10px; font-weight: 700; font-size: 0.9rem;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1);
+  box-shadow: 0 4px 14px rgba(201,124,42,0.35);
+}
+.compare-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,124,42,0.5); }
+
+/* Compare table */
+.compare-table { width: 100%; border-collapse: collapse; }
+.compare-table th {
+  padding: 12px 16px;
+  background: var(--warm); color: var(--brown);
+  font-size: 0.82rem; font-weight: 700;
+  text-align: left; border-bottom: 2px solid var(--warm2);
+}
+.compare-table th:first-child { color: var(--muted); width: 30%; }
+.compare-table td {
+  padding: 11px 16px;
+  font-size: 0.85rem; color: var(--dark);
+  border-bottom: 1px solid var(--warm);
+  vertical-align: top;
+}
+.compare-table tr:hover td { background: rgba(201,124,42,0.04); }
+.compare-table .row-label {
+  font-weight: 600; color: var(--muted);
+  font-size: 0.78rem;
+}
+.compare-win { color: #2d7a28; font-weight: 700; }
+.compare-lose { color: var(--muted2); }
+.compare-mini-bar {
+  height: 6px; background: var(--warm); border-radius: 4px;
+  margin-top: 4px; overflow: hidden;
+}
+.compare-mini-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--amber), var(--amber2));
+  transition: width 1s cubic-bezier(0.22,1,0.36,1);
+}
+
+/* ── ANALYTICS PANEL ── */
+.analytics-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,13,4,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 600;
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+.analytics-overlay.visible { display: flex; }
+.analytics-box {
+  background: var(--cream);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  width: 100%; max-width: 900px;
+  animation: modal-pop 0.4s cubic-bezier(0.34,1.2,0.64,1) both;
+  margin: auto;
+}
+.analytics-kpi-row {
+  display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.analytics-kpi {
+  background: white; border-radius: 14px; padding: 18px 20px;
+  border: 1px solid var(--warm2);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1);
+}
+.analytics-kpi:hover { transform: translateY(-4px); }
+.analytics-kpi-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--amber), var(--amber2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.analytics-kpi-label {
+  font-size: 0.72rem; color: var(--muted2);
+  font-weight: 600; margin-top: 5px;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  font-family: 'Space Mono', monospace;
+}
+.analytics-section-title {
+  font-size: 0.7rem; font-weight: 700; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  font-family: 'Space Mono', monospace;
+  margin-bottom: 14px;
+}
+.analytics-breed-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.analytics-breed-name {
+  width: 180px; font-size: 0.82rem; color: var(--dark);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.analytics-bar-track {
+  flex: 1; height: 10px; background: var(--warm);
+  border-radius: 5px; overflow: hidden;
+}
+.analytics-bar-fill {
+  height: 100%; border-radius: 5px;
+  background: linear-gradient(90deg, var(--amber), var(--amber2));
+  transition: width 1.2s cubic-bezier(0.22,1,0.36,1);
+}
+.analytics-count {
+  font-size: 0.78rem; font-weight: 700; color: var(--amber);
+  width: 28px; text-align: right; flex-shrink: 0;
+}
+.conf-bucket-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+  margin-top: 10px;
+}
+.conf-bucket {
+  background: white; border-radius: 10px; padding: 12px 10px;
+  text-align: center; border: 1px solid var(--warm2);
+}
+.conf-bucket-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem; font-weight: 700; color: var(--amber);
+  line-height: 1;
+}
+.conf-bucket-label { font-size: 0.68rem; color: var(--muted2); margin-top:3px; }
+
+</style>
+</head>
+<body>
+
+<!-- 3D ANIMATED BACKGROUND -->
+<canvas id="bg-canvas"></canvas>
+<div class="glow-blob" style="width:500px;height:500px;background:radial-gradient(circle,rgba(201,124,42,0.18),transparent 70%);left:-100px;top:10%;animation-duration:8s;"></div>
+<div class="glow-blob" style="width:400px;height:400px;background:radial-gradient(circle,rgba(232,168,75,0.12),transparent 70%);right:-80px;top:50%;animation-duration:11s;animation-delay:-4s;"></div>
+<div class="glow-blob" style="width:350px;height:350px;background:radial-gradient(circle,rgba(74,46,18,0.10),transparent 70%);left:10%;bottom:10%;animation-duration:9s;animation-delay:-6s;"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div>
+    <div class="header-logo">Paw<span>ID</span></div>
+    <div class="header-sub">DOG BREED DETECTION SYSTEM</div>
+  </div>
+  <div class="header-right">
+    <div class="header-model-badge" id="modelBadge">⚡ EfficientNetB3</div>
+    <div class="status-dot"></div>
+    <div class="status-text" id="statusText">Loading model…</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="neural-canvas"></canvas>
+  <div class="hero-tag">🎓 ML Semester Project · EfficientNetB3 Transfer Learning : Made with ❤️</div>
+  <h1>Identify Any Dog Breed<br><em>Instantly & Accurately</em></h1>
+  <p class="hero-desc">Upload a photo or browse our database of 130+ breeds — including 10 rare Indian breeds — with complete information on food, climate, temperament & health.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num">130+</div><div class="hero-stat-label">Dog Breeds</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">10</div><div class="hero-stat-label">Indian Breeds</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">20K+</div><div class="hero-stat-label">Training Images</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">Top-5</div><div class="hero-stat-label">Predictions</div></div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- UPLOAD PANEL -->
+  <div class="upload-panel" id="uploadPanel">
+    <div class="upload-panel-tabs">
+      <button class="upload-tab active" onclick="switchTab('upload')">📷 Upload Photo</button>
+      <button class="upload-tab" onclick="switchTab('webcam')">📸 Live Camera</button>
+      <button class="upload-tab" onclick="switchTab('browse')">🔍 Browse Breeds</button>
+      <button class="upload-tab" onclick="switchTab('history')">🕐 History</button>
+    </div>
+
+    <!-- Upload Tab -->
+    <div class="tab-content active" id="tab-upload">
+      <div class="drop-zone" id="dropZone"
+           ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)"
+           onclick="document.getElementById('fileInput').click()">
+        <span class="drop-icon">🐾</span>
+        <h3>Drop your dog photo here</h3>
+        <p>Supports JPG, PNG, WEBP — any dog, any angle</p>
+        <button class="drop-btn" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">Choose Photo</button>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)"/>
+      </div>
+
+      <div class="preview-wrap" id="previewWrap">
+        <img id="previewImg" class="preview-img" src="" alt="Preview"/>
+        <div class="preview-meta">
+          <h4 id="previewName">photo.jpg</h4>
+          <p id="previewSize">0 KB</p>
+          <button class="detect-btn" id="detectBtn" onclick="runDetection()">
+            <span>🔍</span> Detect Breed
+          </button>
+          <br/>
+          <button class="change-img-btn" onclick="resetUpload()">↩ Change Photo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Webcam Tab -->
+    <div class="tab-content" id="tab-webcam">
+      <div class="webcam-area">
+
+        <!-- Live feed -->
+        <div class="webcam-video-wrap" id="webcamVideoWrap">
+          <video id="webcamVideo" autoplay playsinline muted></video>
+          <!-- corner guides (shown when live) -->
+          <div class="webcam-corner tl" id="wcCorner" style="display:none"></div>
+          <div class="webcam-corner tr" style="display:none" id="wcCornerTR"></div>
+          <div class="webcam-corner bl" style="display:none" id="wcCornerBL"></div>
+          <div class="webcam-corner br" style="display:none" id="wcCornerBR"></div>
+          <div class="webcam-snap-flash" id="snapFlash"></div>
+          <!-- Start overlay -->
+          <div class="webcam-overlay" id="webcamOverlay">
+            <span style="font-size:3rem">📸</span>
+            <p>Camera is off</p>
+            <p style="font-size:0.78rem;opacity:0.6">Works on mobile too — point at any dog!</p>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="webcam-controls" id="webcamControls">
+          <button class="webcam-btn webcam-btn-start" id="webcamStartBtn" onclick="startWebcam()">▶ Start Camera</button>
+          <button class="webcam-btn webcam-btn-snap"  id="webcamSnapBtn"  onclick="snapPhoto()" disabled>📸 Snap & Detect</button>
+          <button class="webcam-btn webcam-btn-flip"  id="webcamFlipBtn"  onclick="flipCamera()" style="display:none">🔄 Flip</button>
+          <button class="webcam-btn webcam-btn-stop"  id="webcamStopBtn"  onclick="stopWebcam()" style="display:none">■ Stop</button>
+        </div>
+
+        <div class="webcam-hint">💡 Tip: Make sure the dog fills most of the frame for best accuracy. Works great on mobile — just tap <strong>Start Camera</strong> and point your phone at a dog!</div>
+
+        <!-- Snapshot preview + re-detect -->
+        <div class="webcam-snapshot-wrap" id="snapWrap">
+          <img id="snapPreview" class="webcam-snapshot-preview" src="" alt="Snapshot"/>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+            <button class="webcam-btn webcam-btn-snap" onclick="redetectSnap()">🔍 Re-detect</button>
+            <button class="webcam-btn webcam-btn-stop" onclick="clearSnap()">✕ Clear</button>
+          </div>
+        </div>
+
+        <!-- Hidden canvas for capture -->
+        <canvas id="snapCanvas" style="display:none"></canvas>
+      </div>
+    </div>
+
+    <!-- Browse Tab -->
+    <div class="tab-content" id="tab-browse">
+      <div class="browse-search">
+        <input type="text" id="breedSearch" placeholder="Search breeds…" oninput="filterBreeds(this.value)"/>
+      </div>
+      <div class="breed-grid" id="breedGrid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+
+    <!-- History Tab -->
+    <div class="tab-content" id="tab-history">
+      <div class="history-header">
+        <div class="history-header-left">
+          <span class="history-count" id="historyCount">0 detections</span>
+          <span class="history-subtitle">Stored locally in your browser</span>
+        </div>
+        <button class="history-clear-btn" onclick="clearHistory()" id="historyClearBtn">&#128465; Clear All</button>
+      </div>
+      <div class="history-empty" id="historyEmpty">
+        <div class="history-empty-icon">&#128062;</div>
+        <h3>No detections yet</h3>
+        <p>Upload a dog photo or use the live camera &mdash; it will appear here automatically.</p>
+        <button class="drop-btn" onclick="switchTab('upload')" style="margin-top:14px">&#128247; Upload a Photo</button>
+      </div>
+      <div class="history-grid" id="historyGrid"></div>
+    </div>
+  <!-- DEMO BANNER -->
+  <div class="demo-banner" id="demoBanner">
+    ⚠️ <strong>Demo Mode:</strong> Model not loaded yet. Detection results are simulated. Train the model using the provided Colab notebook and place <code>pawid_final.keras</code> in the <code>models/</code> folder.
+  </div>
+
+  <!-- LOADING -->
+<div class="loading-panel" id="loadingPanel">
+    <div class="paw-anim">🐾</div>
+    <h3>Analyzing your photo…</h3>
+    <p id="loadingMsg" style="font-family:'Space Mono',monospace;font-size:0.82rem;letter-spacing:0.5px">Running EfficientNetB3 inference</p>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <p style="margin-top:12px;font-size:0.72rem;color:var(--muted2);font-family:'Space Mono',monospace;letter-spacing:0.3px" id="loadingSubMsg">initializing neural network…</p>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="result-panel" id="resultPanel">
+
+    <!-- Confidence Warning Banner -->
+    <div class="conf-warning" id="confWarning">
+      <div class="conf-warning-icon">⚠️</div>
+      <div class="conf-warning-text">
+        <h4>Low Confidence Detection</h4>
+        <p>The model is less than 45% certain. This may be a mixed breed, or the photo may be unclear. Try a well-lit, close-up photo where the dog fills most of the frame for best results.</p>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="result-header-card">
+        <div class="shine-sweep"></div>
+      <div class="result-breed-emoji" id="rEmoji">🐕</div>
+      <div class="result-breed-info">
+        <div class="result-breed-name" id="rName">—</div>
+        <div class="result-breed-origin" id="rOrigin">—</div>
+        <div class="result-breed-desc" id="rDesc">—</div>
+      </div>
+      <div class="result-confidence-wrap">
+        <div class="confidence-badge" id="rConf">—</div>
+        <div class="confidence-label">AI Confidence</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons Row -->
+    <div class="result-actions">
+      <button class="action-btn action-btn-pdf" onclick="downloadPDFReport()">
+        📄 Download PDF Report
+      </button>
+      <button class="action-btn action-btn-compare" onclick="openCompare()">
+        ⚖️ Compare Breeds
+      </button>
+      <button class="action-btn action-btn-analytics" onclick="openAnalytics()">
+        📊 View Analytics
+      </button>
+    </div>
+
+    <!-- Grad-CAM Section -->
+    <div class="gradcam-section" id="gradcamSection">
+      <div class="gradcam-header">
+        <h4>🔬 AI Explainability — What the Model Saw</h4>
+        <span class="gradcam-badge">Grad-CAM</span>
+      </div>
+      <div class="gradcam-body">
+        <div class="gradcam-img-wrap">
+          <img id="gradcamOriginal" class="gradcam-original" src="" alt="Original"/>
+          <div class="gradcam-label">Original Photo</div>
+        </div>
+        <div style="display:flex;align-items:center;font-size:1.5rem;color:var(--amber);padding:0 8px;">→</div>
+        <div class="gradcam-img-wrap">
+          <img id="gradcamHeatmap" class="gradcam-heatmap" src="" alt="Heatmap"/>
+          <div class="gradcam-label">Attention Heatmap</div>
+        </div>
+        <div class="gradcam-legend">
+          <h5>Heatmap Color Scale</h5>
+          <div class="gradcam-scale">
+            <span style="background:#0000ff;opacity:0.7"></span>
+            <span style="background:#00aaff;opacity:0.7"></span>
+            <span style="background:#00ff88;opacity:0.7"></span>
+            <span style="background:#aaff00;opacity:0.7"></span>
+            <span style="background:#ffcc00;opacity:0.7"></span>
+            <span style="background:#ff6600;opacity:0.7"></span>
+            <span style="background:#ff0000;opacity:0.7"></span>
+          </div>
+          <div class="gradcam-scale-labels">
+            <span>Low attention</span>
+            <span>High attention</span>
+          </div>
+          <div class="gradcam-explain">
+            <strong>🔴 Red/orange regions</strong> — the model focused heavily here to make its prediction. For dogs, this is typically the face, ears, and distinctive coat patterns.<br><br>
+            <strong>🔵 Blue/green regions</strong> — background or body parts that had little influence on the breed classification.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="info-grid" id="infoGrid"></div>
+
+    <!-- Alternatives -->
+    <div class="alternatives" id="altPanel" style="display:none">
+      <h4>Also considered…</h4>
+      <div class="alt-list" id="altList"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ════ COMPARE MODAL ════ -->
+<div class="modal-overlay" id="compareModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>⚖️ Breed Comparison</h3>
+      <button class="modal-close" onclick="closeCompare()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="compare-search-row">
+        <div class="compare-input-wrap">
+          <label>Breed 1</label>
+          <input type="text" class="compare-input" id="compareBreed1" placeholder="e.g. Golden Retriever"/>
+        </div>
+        <div class="compare-input-wrap">
+          <label>Breed 2</label>
+          <input type="text" class="compare-input" id="compareBreed2" placeholder="e.g. Labrador Retriever"/>
+        </div>
+        <button class="compare-btn" onclick="runCompare()">Compare →</button>
+      </div>
+      <div id="compareResult"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ANALYTICS MODAL ════ -->
+<div class="analytics-overlay" id="analyticsModal">
+  <div class="analytics-box">
+    <div class="modal-header">
+      <h3>📊 PawID Analytics Dashboard</h3>
+      <button class="modal-close" onclick="closeAnalytics()">✕</button>
+    </div>
+    <div class="modal-body" id="analyticsBody">
+      <p style="color:var(--muted);text-align:center;padding:40px">Loading analytics…</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  STATE
+// ============================================================
+let uploadedFile = null;
+let currentBreedData = null;
+const INDIAN_BREEDS = ['Indian Pariah Dog','Rajapalayam','Mudhol Hound','Chippiparai','Kombai'];
+
+// ============================================================
+//  STARTUP
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  await checkHealth();
+  await loadBreedList();
+});
+
+async function checkHealth() {
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    const txt = document.getElementById('statusText');
+    if (data.model_loaded) {
+      txt.textContent = `Model loaded · ${data.total_breeds_in_db} breeds`;
+      txt.style.color = 'rgba(255,255,255,0.8)';
+    } else {
+      txt.textContent = 'Demo mode — train model to activate';
+      txt.style.color = '#f0c040';
+    }
+  } catch {
+    document.getElementById('statusText').textContent = 'Server offline';
+  }
+}
+
+async function loadBreedList() {
+  try {
+    const res = await fetch('/api/breeds');
+    const data = await res.json();
+    renderBreedGrid(data.breeds);
+  } catch {
+    console.warn('Could not load breed list from API — using fallback');
+    renderBreedGrid([]);
+  }
+}
+
+function renderBreedGrid(breeds) {
+  const grid = document.getElementById('breedGrid');
+  if (!breeds.length) {
+    grid.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;grid-column:1/-1">Could not load breed list. Is the server running?</p>';
+    return;
+  }
+  grid.innerHTML = breeds.map(b => {
+    const isIndian = INDIAN_BREEDS.includes(b);
+    return `<button class="breed-chip ${isIndian ? 'indian' : ''}" onclick="lookupBreed('${b.replace(/'/g, "\\'")}')">
+      ${isIndian ? '🇮🇳 ' : ''}${b}
+    </button>`;
+  }).join('');
+}
+
+function filterBreeds(query) {
+  const chips = document.querySelectorAll('.breed-chip');
+  const q = query.toLowerCase();
+  chips.forEach(chip => {
+    chip.style.display = chip.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ============================================================
+//  TAB SWITCHING (3 tabs: upload, webcam, browse)
+// ============================================================
+function switchTab(tab) {
+  const tabIds = ['upload', 'webcam', 'browse', 'history'];
+  document.querySelectorAll('.upload-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', tabIds[i] === tab);
+  });
+  document.querySelectorAll('.tab-content').forEach((c, i) => {
+    c.classList.toggle('active', tabIds[i] === tab);
+  });
+  if (tab !== 'webcam') stopWebcam();
+  if (tab === 'history') renderHistoryGrid();
+}
+
+// ============================================================
+//  WEBCAM
+// ============================================================
+let _stream = null;
+let _facingMode = 'environment'; // rear camera first (mobile)
+let _snapBlob = null;
+
+async function startWebcam() {
+  try {
+    if (_stream) stopWebcam();
+    const constraints = {
+      video: { facingMode: { ideal: _facingMode }, width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: false
+    };
+    _stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const vid = document.getElementById('webcamVideo');
+    vid.srcObject = _stream;
+    await vid.play();
+
+    // Show corners, hide overlay
+    document.getElementById('webcamOverlay').classList.add('hidden');
+    ['wcCorner','wcCornerTR','wcCornerBL','wcCornerBR'].forEach(id => {
+      document.getElementById(id).style.display = 'block';
+    });
+
+    document.getElementById('webcamSnapBtn').disabled = false;
+    document.getElementById('webcamStartBtn').style.display = 'none';
+    document.getElementById('webcamFlipBtn').style.display = 'flex';
+    document.getElementById('webcamStopBtn').style.display = 'flex';
+
+    clearSnap();
+  } catch (err) {
+    console.error(err);
+    alert('Could not access camera.\n\n' +
+      'Make sure you:\n' +
+      '• Are on HTTPS or localhost\n' +
+      '• Allowed camera permission in your browser\n\n' +
+      'Error: ' + err.message);
+  }
+}
+
+function stopWebcam() {
+  if (_stream) {
+    _stream.getTracks().forEach(t => t.stop());
+    _stream = null;
+  }
+  const vid = document.getElementById('webcamVideo');
+  vid.srcObject = null;
+
+  document.getElementById('webcamOverlay').classList.remove('hidden');
+  ['wcCorner','wcCornerTR','wcCornerBL','wcCornerBR'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+
+  document.getElementById('webcamSnapBtn').disabled = true;
+  document.getElementById('webcamStartBtn').style.display = 'flex';
+  document.getElementById('webcamFlipBtn').style.display = 'none';
+  document.getElementById('webcamStopBtn').style.display = 'none';
+}
+
+async function flipCamera() {
+  _facingMode = (_facingMode === 'environment') ? 'user' : 'environment';
+  await startWebcam();
+}
+
+function snapPhoto() {
+  const vid = document.getElementById('webcamVideo');
+  const canvas = document.getElementById('snapCanvas');
+  canvas.width  = vid.videoWidth  || 640;
+  canvas.height = vid.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+
+  // Mirror if front-facing
+  if (_facingMode === 'user') {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+
+  // Flash effect
+  const flash = document.getElementById('snapFlash');
+  flash.classList.add('flash');
+  setTimeout(() => flash.classList.remove('flash'), 200);
+
+  canvas.toBlob(blob => {
+    _snapBlob = blob;
+    const url = URL.createObjectURL(blob);
+    document.getElementById('snapPreview').src = url;
+    document.getElementById('snapWrap').classList.add('visible');
+    sendSnapToServer(blob);
+  }, 'image/jpeg', 0.92);
+}
+
+function clearSnap() {
+  _snapBlob = null;
+  document.getElementById('snapWrap').classList.remove('visible');
+  document.getElementById('snapPreview').src = '';
+}
+
+function redetectSnap() {
+  if (_snapBlob) sendSnapToServer(_snapBlob);
+}
+
+async function sendSnapToServer(blob) {
+  showLoading('Analyzing snapshot…');
+  hideResults();
+
+  const loadMsgs = [
+    'Preprocessing image…',
+    'Running model inference…',
+    'Calculating probabilities…',
+    'Looking up breed database…',
+  ];
+  let msgIdx = 0;
+  const msgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadMsgs.length;
+    document.getElementById('loadingMsg').textContent = loadMsgs[msgIdx];
+  }, 700);
+
+  try {
+    const formData = new FormData();
+    formData.append('image', blob, 'webcam_snap.jpg');
+
+    const res = await fetch('/api/detect', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    clearInterval(msgInterval);
+    hideLoading();
+
+    if (!data.success) {
+      alert('Detection failed: ' + (data.error || 'Unknown error'));
+      return;
+    }
+    if (data.demo_mode) {
+      document.getElementById('demoBanner').classList.add('visible');
+    }
+    renderResults(data.breed_info, data.predictions, data.demo_mode);
+
+  } catch (err) {
+    clearInterval(msgInterval);
+    hideLoading();
+    alert('Could not reach server. Make sure app.py is running.');
+    console.error(err);
+  }
+}
+
+
+// ============================================================
+//  UPLOAD HANDLING
+// ============================================================
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('drag-over');
+}
+function handleDragLeave() {
+  document.getElementById('dropZone').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) showPreview(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) showPreview(file);
+}
+function showPreview(file) {
+  uploadedFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('previewImg').src = ev.target.result;
+    document.getElementById('previewName').textContent = file.name;
+    document.getElementById('previewSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('dropZone').style.display = 'none';
+    document.getElementById('previewWrap').classList.add('visible');
+    hideResults();
+  };
+  reader.readAsDataURL(file);
+}
+function resetUpload() {
+  uploadedFile = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('dropZone').style.display = '';
+  document.getElementById('previewWrap').classList.remove('visible');
+  hideResults();
+}
+
+// ============================================================
+//  DETECTION
+// ============================================================
+async function runDetection() {
+  if (!uploadedFile) return;
+  showLoading('Running EfficientNetB3 inference…');
+  hideResults();
+
+  const loadMsgs = [
+    'Preprocessing image (300×300)…',
+    'Running EfficientNetB3 inference…',
+    'Calculating softmax probabilities…',
+    'Looking up breed database…',
+  ];
+  const subMsgs = [
+    'loading model weights…',
+    'forward pass in progress…',
+    'applying top-k softmax…',
+    'cross-referencing database…',
+  ];
+  let msgIdx = 0;
+  const msgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadMsgs.length;
+    document.getElementById('loadingMsg').textContent = loadMsgs[msgIdx];
+    const subEl = document.getElementById('loadingSubMsg');
+    if (subEl) subEl.textContent = subMsgs[msgIdx];
+  }, 700);
+
+  try {
+    const formData = new FormData();
+    formData.append('image', uploadedFile);
+
+    const res = await fetch('/api/detect', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    clearInterval(msgInterval);
+    hideLoading();
+
+    if (!data.success) {
+      alert('Detection failed: ' + (data.error || 'Unknown error'));
+      return;
+    }
+
+    if (data.demo_mode) {
+      document.getElementById('demoBanner').classList.add('visible');
+    }
+
+    // ── Confidence Warning ──
+    const confWarn = document.getElementById('confWarning');
+    if (data.low_confidence) {
+      confWarn.classList.add('visible');
+    } else {
+      confWarn.classList.remove('visible');
+    }
+
+    // ── Grad-CAM ──
+    const gradcamSection = document.getElementById('gradcamSection');
+    if (data.gradcam) {
+      const previewImg = document.getElementById('previewImg');
+      document.getElementById('gradcamOriginal').src = previewImg.src;
+      document.getElementById('gradcamHeatmap').src = 'data:image/png;base64,' + data.gradcam;
+      gradcamSection.classList.add('visible');
+    } else {
+      gradcamSection.classList.remove('visible');
+    }
+
+    renderResults(data.breed_info, data.predictions, data.demo_mode);
+
+  } catch (err) {
+    clearInterval(msgInterval);
+    hideLoading();
+    alert('Could not reach server. Make sure app.py is running.');
+    console.error(err);
+  }
+}
+
+async function lookupBreed(breedName) {
+  showLoading(`Looking up ${breedName}…`);
+  hideResults();
+  try {
+    const res = await fetch('/api/breed/' + encodeURIComponent(breedName));
+    const data = await res.json();
+    hideLoading();
+    if (!data.success) { alert('Breed not found.'); return; }
+    renderResults(data.breed_info, [{breed: breedName, confidence: 1.0, percentage: '100.0%', rank: 1}], false);
+    // Scroll to result
+    setTimeout(() => document.getElementById('resultPanel').scrollIntoView({behavior:'smooth', block:'start'}), 100);
+  } catch {
+    hideLoading();
+    alert('Could not reach server.');
+  }
+}
+
+// ============================================================
+//  RENDER RESULTS
+// ============================================================
+function renderResults(info, predictions, isDemo) {
+  if (!info) {
+    document.getElementById('rName').textContent = predictions[0]?.breed || 'Unknown';
+    document.getElementById('rConf').textContent = predictions[0]?.percentage || '—';
+    document.getElementById('rDesc').textContent = 'This breed is not yet in our database.';
+    document.getElementById('infoGrid').innerHTML = '';
+    showResults();
+    return;
+  }
+
+  currentBreedData = info;
+
+  // Header
+  document.getElementById('rEmoji').textContent = info.emoji || '🐕';
+  document.getElementById('rName').textContent = info.breed || info.name || '—';
+  document.getElementById('rOrigin').textContent =
+    [info.origin, info.group, info.size].filter(Boolean).join(' · ');
+  document.getElementById('rDesc').textContent = info.description || '';
+  document.getElementById('rConf').textContent = predictions[0]?.percentage || '—';
+
+  // Build info cards
+  const t = info.temperament || {};
+  const f = info.family_compatibility || {};
+  const food = info.food || {};
+  const temp = info.temperature || {};
+  const health = info.health || {};
+  const exercise = info.exercise || {};
+  const india = info.india_suitability || {};
+  const stats = info.stats || {};
+
+  const cards = [
+
+    // 1 — Basic Stats
+    card('📋', 'Basic Stats', `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.85rem">
+        ${stat('Lifespan', info.lifespan || stats.lifespan || '—')}
+        ${stat('Weight', info.weight_kg ? info.weight_kg + ' kg' : '—')}
+        ${stat('Height', info.height_cm ? info.height_cm + ' cm' : '—')}
+        ${stat('Group', info.group || '—')}
+        ${stat('Size', info.size || '—')}
+        ${stat('Coat', info.coat || '—')}
+      </div>
+    `),
+
+    // 2 — Climate
+    card(temp.icon || '🌡️', 'Climate & Temperature', `
+      <div style="font-size:1.5rem;font-weight:700;color:var(--amber);margin-bottom:6px">${temp.ideal_celsius || '—'}°C</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:8px">${temp.climate || ''}</div>
+      <div class="tags">
+        <span class="tag tag-blue">☀️ Heat: ${temp.heat_tolerance || '—'}</span>
+        <span class="tag tag-brown">❄️ Cold: ${temp.cold_tolerance || '—'}</span>
+      </div>
+      ${temp.notes ? `<div style="margin-top:10px;font-size:0.8rem;color:var(--muted);font-style:italic">${temp.notes}</div>` : ''}
+    `),
+
+    // 3 — Food
+    card(food.icon || '🍗', 'Diet & Nutrition', `
+      <div class="tags" style="margin-bottom:10px">
+        <span class="tag ${food.diet_type?.includes('Non') ? 'tag-red' : 'tag-green'}">${food.diet_type || '—'}</span>
+        <span class="tag tag-amber">🕐 ${food.meals_per_day || '2'}x daily</span>
+      </div>
+      <div class="food-cols">
+        <div class="food-col food-col-good">
+          <h5>✅ Recommended</h5>
+          ${(food.recommended || []).map(f => `<div class="food-item">${f}</div>`).join('')}
+        </div>
+        <div class="food-col food-col-bad">
+          <h5>❌ Avoid</h5>
+          ${(food.avoid || []).map(f => `<div class="food-item">${f}</div>`).join('')}
+        </div>
+      </div>
+      ${food.special_notes ? `<div style="margin-top:10px;font-size:0.78rem;color:var(--muted);font-style:italic">⚠️ ${food.special_notes}</div>` : ''}
+    `),
+
+    // 4 — Friendliness
+    card('😊', 'Friendliness & Compatibility', `
+      ${meter('With Family / Kids', f.with_kids, 'green')}
+      ${meter('With Strangers', f.with_strangers, f.with_strangers > 70 ? 'green' : f.with_strangers > 40 ? 'amber' : 'red')}
+      ${meter('With Other Dogs', f.with_other_dogs, f.with_other_dogs > 70 ? 'green' : 'amber')}
+      ${meter('With Cats', f.with_cats, f.with_cats > 60 ? 'green' : 'amber')}
+      <div class="tags" style="margin-top:10px">
+        <span class="tag tag-amber">🛡️ ${f.guard_dog_rating || '—'}</span>
+        ${f.good_for_apartments ? '<span class="tag tag-green">🏢 Apartment OK</span>' : '<span class="tag tag-red">🏡 Needs space</span>'}
+        ${f.first_time_owner ? '<span class="tag tag-green">👋 Good for beginners</span>' : '<span class="tag tag-red">⚠️ Experienced owner</span>'}
+      </div>
+    `),
+
+    // 5 — Temperament
+    card('⚡', 'Temperament & Trainability', `
+      ${meter('Friendly Score', t.friendly_score, 'green')}
+      ${meter('Trainability', t.trainable_score, 'blue')}
+      ${meter('Energy Level', t.energy_score, t.energy_score > 80 ? 'amber' : 'green')}
+      ${meter('Barking Level', t.barking_score, t.barking_score > 75 ? 'red' : 'amber')}
+      <div class="tags" style="margin-top:10px">
+        ${(t.traits || []).map(tr => `<span class="tag tag-blue">${tr}</span>`).join('')}
+      </div>
+    `),
+
+    // 6 — Exercise
+    card('🏃', 'Exercise Needs', `
+      <div style="font-size:2rem;font-weight:700;color:var(--amber);margin-bottom:2px">${exercise.daily_minutes || '—'} min/day</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">Intensity: <b>${exercise.intensity || '—'}</b></div>
+      <div class="tags">
+        ${(exercise.activities || []).map(a => `<span class="tag tag-green">${a}</span>`).join('')}
+      </div>
+      ${exercise.notes ? `<div style="margin-top:10px;font-size:0.8rem;color:var(--muted);font-style:italic">${exercise.notes}</div>` : ''}
+    `),
+
+    // 7 — Health
+    card('💊', 'Health & Grooming', `
+      <div style="font-size:0.8rem;font-weight:600;color:var(--red);margin-bottom:4px">⚕️ Common Health Issues</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">${(health.common_issues || []).join(', ') || '—'}</div>
+      ${health.lifespan_note ? `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;font-style:italic">${health.lifespan_note}</div>` : ''}
+      <div class="tags">
+        <span class="tag tag-amber">✂️ Grooming: ${health.grooming_needs || '—'}</span>
+        <span class="tag tag-amber">🌀 Shedding: ${health.shedding_level || '—'}</span>
+        ${health.hypoallergenic ? '<span class="tag tag-green">Hypoallergenic</span>' : ''}
+      </div>
+      ${health.grooming_details ? `<div style="margin-top:10px;font-size:0.8rem;color:var(--muted)">${health.grooming_details}</div>` : ''}
+    `),
+
+    // 8 — India Suitability
+    card('🇮🇳', 'India Suitability', `
+      <div class="india-bar-wrap">
+        <div class="india-score-num">${india.score || 50}/100</div>
+        <div class="india-score-label">India Suitability Score</div>
+        ${meter('', india.score, india.score >= 70 ? 'green' : india.score >= 45 ? 'amber' : 'red')}
+      </div>
+      ${india.notes ? `<div style="margin-top:12px;font-size:0.82rem;color:var(--muted)">${india.notes}</div>` : ''}
+    `),
+
+    // 9 — Fun Facts
+    card('💡', 'Fun Facts', `
+      <ul class="funfacts-list">
+        ${(info.fun_facts || []).map(f => `<li>${f}</li>`).join('')}
+      </ul>
+    `),
+  ];
+
+  document.getElementById('infoGrid').innerHTML = cards.join('');
+
+  // Animate meters after DOM update
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      document.querySelectorAll('.meter-fill[data-width]').forEach(el => {
+        el.style.width = el.dataset.width + '%';
+      });
+    }, 100);
+  });
+
+  // Alternatives
+  const alts = predictions.slice(1).filter(p => p.confidence > 0.01);
+  if (alts.length) {
+    document.getElementById('altList').innerHTML = alts.map(a =>
+      `<button class="alt-chip" onclick="lookupBreed('${a.breed.replace(/'/g,"\\'")}')">
+        ${a.breed}
+        <span class="alt-chip-conf">${a.percentage}</span>
+      </button>`
+    ).join('');
+    document.getElementById('altPanel').style.display = 'block';
+  } else {
+    document.getElementById('altPanel').style.display = 'none';
+  }
+
+  showResults();
+}
+
+// ── Card builders ──
+function card(icon, label, content) {
+  return `<div class="info-card">
+    <div class="ic-icon">${icon}</div>
+    <div class="ic-label">${label}</div>
+    <div class="ic-value">${content}</div>
+  </div>`;
+}
+function stat(label, value) {
+  return `<div><span style="color:var(--muted2);font-size:0.72rem">${label}</span><br/><b>${value}</b></div>`;
+}
+function meter(label, value, color) {
+  if (value === undefined || value === null) return '';
+  const pct = Math.min(100, Math.max(0, Number(value)));
+  return `<div class="meter-row">
+    ${label ? `<div class="meter-head"><span>${label}</span><span>${pct}%</span></div>` : ''}
+    <div class="meter-bar">
+      <div class="meter-fill mf-${color}" data-width="${pct}" style="width:0%"></div>
+    </div>
+  </div>`;
+}
+
+// ── UI helpers ──
+function showLoading(msg) {
+  document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('loadingPanel').classList.add('visible');
+}
+function hideLoading() {
+  document.getElementById('loadingPanel').classList.remove('visible');
+}
+function showResults() {
+  document.getElementById('resultPanel').classList.add('visible');
+  setTimeout(() => document.getElementById('resultPanel').scrollIntoView({behavior:'smooth', block:'start'}), 100);
+}
+function hideResults() {
+  document.getElementById('resultPanel').classList.remove('visible');
+  document.getElementById('demoBanner').classList.remove('visible');
+  const cw = document.getElementById('confWarning');
+  if (cw) cw.classList.remove('visible');
+  const gc = document.getElementById('gradcamSection');
+  if (gc) gc.classList.remove('visible');
+}
+
+// ============================================================
+//  HISTORY — localStorage persistence with animations
+// ============================================================
+const HISTORY_KEY = 'pawid_history_v1';
+const MAX_HISTORY = 20;
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveHistory(arr) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); } catch {}
+}
+
+function addToHistory(predictions, breedInfo, imageDataUrl, isDemo) {
+  const history = getHistory();
+  const entry = {
+    id:          Date.now(),
+    timestamp:   new Date().toISOString(),
+    breed:       predictions[0]?.breed || 'Unknown',
+    confidence:  predictions[0]?.confidence || 0,
+    percentage:  predictions[0]?.percentage || '—',
+    alternatives: predictions.slice(1, 4).map(p => p.breed),
+    emoji:       breedInfo?.emoji || '🐕',
+    origin:      breedInfo?.origin || '',
+    group:       breedInfo?.group || '',
+    imageDataUrl: imageDataUrl || null,
+    isDemo,
+  };
+  history.unshift(entry);
+  if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+  saveHistory(history);
+  updateHistoryBadge();
+}
+
+function updateHistoryBadge() {
+  const history = getHistory();
+  // Update badge on History tab button
+  document.querySelectorAll('.upload-tab').forEach((btn, i) => {
+    if (i === 3) { // history tab
+      const existing = btn.querySelector('.history-badge');
+      if (existing) existing.remove();
+      if (history.length > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'history-badge';
+        badge.textContent = history.length > 9 ? '9+' : history.length;
+        btn.appendChild(badge);
+      }
+    }
+  });
+}
+
+function timeAgo(isoString) {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const mins  = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days  = Math.floor(diff / 86400000);
+  if (mins  < 1)  return 'Just now';
+  if (mins  < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+
+function confClass(conf) {
+  if (conf >= 0.7) return 'high';
+  if (conf >= 0.4) return 'med';
+  return 'low';
+}
+
+function renderHistoryGrid() {
+  const history  = getHistory();
+  const grid     = document.getElementById('historyGrid');
+  const empty    = document.getElementById('historyEmpty');
+  const countEl  = document.getElementById('historyCount');
+  const clearBtn = document.getElementById('historyClearBtn');
+
+  countEl.textContent = history.length === 0 ? 'No detections yet'
+    : `${history.length} detection${history.length > 1 ? 's' : ''}`;
+
+  if (history.length === 0) {
+    empty.classList.add('visible');
+    grid.innerHTML = '';
+    clearBtn.style.display = 'none';
+    return;
+  }
+  empty.classList.remove('visible');
+  clearBtn.style.display = '';
+
+  grid.innerHTML = history.map((entry, idx) => {
+    const imgHtml = entry.imageDataUrl
+      ? `<img class="history-card-img" src="${entry.imageDataUrl}" alt="${entry.breed}" loading="lazy"/>`
+      : `<div class="history-card-img" style="display:flex;align-items:center;justify-content:center;font-size:3.5rem;height:100%">${entry.emoji}</div>`;
+
+    const altChips = entry.alternatives.slice(0,2).map(a =>
+      `<span class="history-alt-chip">${a}</span>`
+    ).join('');
+
+    const delay = idx * 0.06;
+
+    return `
+    <div class="history-card" id="hcard-${entry.id}" style="animation-delay:${delay}s"
+         onclick="loadHistoryEntry(${entry.id})">
+      <div class="history-card-img-wrap">
+        ${imgHtml}
+        <span class="history-card-emoji">${entry.emoji}</span>
+        <span class="history-conf-badge ${confClass(entry.confidence)}">${entry.percentage}</span>
+      </div>
+      <div class="history-card-body">
+        <div class="history-card-name">${entry.breed}</div>
+        <div class="history-card-meta">${[entry.origin, entry.group].filter(Boolean).join(' · ')}</div>
+        <div class="history-card-time">${timeAgo(entry.timestamp)}</div>
+      </div>
+      ${altChips ? `<div class="history-card-footer">${altChips}</div>` : ''}
+      <button class="history-card-del" title="Remove"
+        onclick="event.stopPropagation(); deleteHistoryEntry(${entry.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function loadHistoryEntry(id) {
+  const history = getHistory();
+  const entry   = history.find(e => e.id === id);
+  if (!entry) return;
+
+  // Re-fetch full breed info from API and render
+  showLoading(`Re-loading ${entry.breed}…`);
+  switchTab('upload');
+  fetch('/api/breed/' + encodeURIComponent(entry.breed))
+    .then(r => r.json())
+    .then(data => {
+      hideLoading();
+      const preds = [{ breed: entry.breed, confidence: entry.confidence, percentage: entry.percentage, rank: 1 },
+        ...entry.alternatives.map((b, i) => ({ breed: b, confidence: 0, percentage: '—', rank: i+2 }))];
+      renderResults(data.breed_info || null, preds, entry.isDemo);
+      showToast(`📖 Loaded: ${entry.breed}`);
+    })
+    .catch(() => { hideLoading(); showToast('Could not reload entry'); });
+}
+
+function deleteHistoryEntry(id) {
+  const card = document.getElementById('hcard-' + id);
+  if (card) {
+    card.classList.add('removing');
+    setTimeout(() => {
+      const history = getHistory().filter(e => e.id !== id);
+      saveHistory(history);
+      updateHistoryBadge();
+      renderHistoryGrid();
+    }, 350);
+  }
+}
+
+function clearHistory() {
+  if (!confirm('Clear all detection history? This cannot be undone.')) return;
+  saveHistory([]);
+  updateHistoryBadge();
+  renderHistoryGrid();
+  showToast('🗑 History cleared');
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('historyToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'historyToast';
+    toast.className = 'history-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ── Hook into renderResults to auto-save ──
+const _origRenderResults = renderResults;
+renderResults = function(info, predictions, isDemo) {
+  _origRenderResults(info, predictions, isDemo);
+
+  // Capture image thumbnail if available
+  let imgDataUrl = null;
+  const previewImg = document.getElementById('previewImg');
+  if (previewImg && previewImg.src && previewImg.src.startsWith('data:')) {
+    // Resize to thumbnail
+    try {
+      const thumbCanvas = document.createElement('canvas');
+      thumbCanvas.width = 200; thumbCanvas.height = 200;
+      const tCtx = thumbCanvas.getContext('2d');
+      tCtx.drawImage(previewImg, 0, 0, 200, 200);
+      imgDataUrl = thumbCanvas.toDataURL('image/jpeg', 0.75);
+    } catch (e) { imgDataUrl = null; }
+  }
+  // Also capture webcam snapshot if present
+  if (!imgDataUrl) {
+    const snapImg = document.getElementById('snapPreview');
+    if (snapImg && snapImg.src && snapImg.src.startsWith('blob:')) {
+      try {
+        const snap = document.createElement('canvas');
+        snap.width = 200; snap.height = 200;
+        const sCtx = snap.getContext('2d');
+        sCtx.drawImage(snapImg, 0, 0, 200, 200);
+        imgDataUrl = snap.toDataURL('image/jpeg', 0.75);
+      } catch (e) { imgDataUrl = null; }
+    }
+  }
+
+  if (predictions && predictions[0] && predictions[0].breed !== '—') {
+    addToHistory(predictions, info, imgDataUrl, isDemo);
+    showToast(`✅ Saved to history: ${predictions[0].breed}`);
+  }
+};
+
+// Init badge on load
+document.addEventListener('DOMContentLoaded', updateHistoryBadge);
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ============================================================
+//  3D BACKGROUND — Three.js floating paw prints + particles
+// ============================================================
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+  camera.position.set(0, 0, 18);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xfdf8f2, 0.8);
+  scene.add(ambientLight);
+  const pointLight1 = new THREE.PointLight(0xc97c2a, 2, 60);
+  pointLight1.position.set(-10, 10, 10);
+  scene.add(pointLight1);
+  const pointLight2 = new THREE.PointLight(0xe8a84b, 1.5, 60);
+  pointLight2.position.set(10, -5, 8);
+  scene.add(pointLight2);
+
+  // PAW PRINT GEOMETRY — one central pad + 4 toe pads
+  function makePawMesh(color) {
+    const group = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.55, roughness: 0.4, metalness: 0.1 });
+    
+    // Central pad
+    const padGeo = new THREE.SphereGeometry(0.38, 16, 12);
+    padGeo.scale(1, 0.75, 0.3);
+    group.add(new THREE.Mesh(padGeo, mat));
+    
+    // 4 toe pads
+    const toePositions = [
+      [-0.30,  0.50, 0], [ 0.30,  0.50, 0],
+      [-0.52,  0.15, 0], [ 0.52,  0.15, 0]
+    ];
+    toePositions.forEach(([x, y, z]) => {
+      const toeGeo = new THREE.SphereGeometry(0.17, 10, 8);
+      toeGeo.scale(1, 0.8, 0.4);
+      const toe = new THREE.Mesh(toeGeo, mat);
+      toe.position.set(x, y, z);
+      group.add(toe);
+    });
+    return group;
+  }
+
+  const COLORS = [0xc97c2a, 0xe8a84b, 0x8a6040, 0x4a2e12, 0xd4956a];
+  
+  // Create floating paw prints
+  const paws = [];
+  const PAW_COUNT = 22;
+  for (let i = 0; i < PAW_COUNT; i++) {
+    const col = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const paw = makePawMesh(col);
+    const scale = 0.25 + Math.random() * 0.7;
+    paw.scale.setScalar(scale);
+    // Scatter them across the scene, favor sides
+    const side = Math.random() > 0.5 ? 1 : -1;
+    paw.position.set(
+      side * (6 + Math.random() * 10) * (Math.random() > 0.3 ? 1 : -0.5),
+      (Math.random() - 0.5) * 20,
+      (Math.random() - 0.5) * 8
+    );
+    paw.rotation.z = Math.random() * Math.PI;
+    paw.userData = {
+      speedY:   0.008 + Math.random() * 0.015,
+      speedRot: (Math.random() - 0.5) * 0.012,
+      drift:    (Math.random() - 0.5) * 0.004,
+      initY:    paw.position.y,
+      range:    12 + Math.random() * 6,
+      phase:    Math.random() * Math.PI * 2,
+      floatAmp: 0.5 + Math.random() * 1.2,
+      floatSpd: 0.4 + Math.random() * 0.6,
+    };
+    scene.add(paw);
+    paws.push(paw);
+  }
+
+  // Floating particle spheres
+  const particles = [];
+  const PARTICLE_COUNT = 60;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const size = 0.04 + Math.random() * 0.12;
+    const geo = new THREE.SphereGeometry(size, 6, 6);
+    const col = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const mat = new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: 0.3 + Math.random() * 0.3, roughness: 0.6 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(
+      (Math.random() - 0.5) * 40,
+      (Math.random() - 0.5) * 24,
+      (Math.random() - 0.5) * 10
+    );
+    mesh.userData = {
+      vy: 0.005 + Math.random() * 0.012,
+      vx: (Math.random() - 0.5) * 0.006,
+      phase: Math.random() * Math.PI * 2,
+    };
+    scene.add(mesh);
+    particles.push(mesh);
+  }
+
+  // Floating bone meshes
+  function makeBone(color) {
+    const group = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.4, roughness: 0.5 });
+    const shaftGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.7, 8);
+    group.add(new THREE.Mesh(shaftGeo, mat));
+    [[-0.35, 0], [0.35, 0]].forEach(([x]) => {
+      [-0.12, 0.12].forEach(dz => {
+        const ballGeo = new THREE.SphereGeometry(0.13, 8, 8);
+        const ball = new THREE.Mesh(ballGeo, mat);
+        ball.position.set(x, dz * 1.2, 0);
+        group.add(ball);
+      });
+    });
+    return group;
+  }
+  
+  const bones = [];
+  for (let i = 0; i < 8; i++) {
+    const bone = makeBone(COLORS[Math.floor(Math.random() * COLORS.length)]);
+    const scale = 0.4 + Math.random() * 0.8;
+    bone.scale.setScalar(scale);
+    const side = i % 2 === 0 ? 1 : -1;
+    bone.position.set(
+      side * (8 + Math.random() * 9),
+      (Math.random() - 0.5) * 18,
+      (Math.random() - 0.5) * 6
+    );
+    bone.rotation.z = Math.random() * Math.PI;
+    bone.userData = {
+      vy:      0.006 + Math.random() * 0.010,
+      rotSpd:  (Math.random() - 0.5) * 0.015,
+      range:   10 + Math.random() * 8,
+    };
+    scene.add(bone);
+    bones.push(bone);
+  }
+
+  let t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.01;
+
+    // Animate paws
+    paws.forEach(paw => {
+      const u = paw.userData;
+      paw.position.y += u.speedY;
+      paw.position.x += u.drift + Math.sin(t * u.floatSpd + u.phase) * 0.008;
+      paw.position.z  = Math.sin(t * 0.3 + u.phase) * u.floatAmp;
+      paw.rotation.z += u.speedRot;
+      // Opacity pulse
+      paw.children.forEach(c => {
+        if (c.material) c.material.opacity = 0.25 + 0.25 * Math.sin(t * 0.7 + u.phase);
+      });
+      if (paw.position.y > u.range) {
+        paw.position.y = -u.range;
+      }
+    });
+
+    // Animate particles
+    particles.forEach(p => {
+      const u = p.userData;
+      p.position.y += u.vy;
+      p.position.x += u.vx + Math.sin(t * 0.5 + u.phase) * 0.004;
+      p.material.opacity = 0.15 + 0.25 * Math.abs(Math.sin(t * 0.8 + u.phase));
+      if (p.position.y > 14) p.position.y = -14;
+    });
+
+    // Animate bones
+    bones.forEach(b => {
+      const u = b.userData;
+      b.position.y += u.vy;
+      b.rotation.z += u.rotSpd;
+      if (b.position.y > u.range) b.position.y = -u.range;
+    });
+
+    // Gentle camera sway
+    camera.position.x = Math.sin(t * 0.08) * 0.6;
+    camera.position.y = Math.cos(t * 0.06) * 0.3;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  });
+
+  // Mouse parallax — paws subtly follow cursor
+  document.addEventListener('mousemove', (e) => {
+    const mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    const my = (e.clientY / window.innerHeight - 0.5) * 2;
+    paws.forEach((paw, i) => {
+      const depth = 0.03 + (i % 4) * 0.015;
+      paw.position.x += (mx * depth - paw.position.x * 0.0005) * 0.04;
+      paw.position.y += (-my * depth * 0.5) * 0.04;
+    });
+  });
+})();
+
+// ============================================================
+//  NEURAL NETWORK CANVAS — animated in the hero area
+// ============================================================
+(function() {
+  const canvas = document.getElementById('neural-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width  = rect.width;
+    canvas.height = rect.height;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const AMBER  = 'rgba(201,124,42,';
+  const AMBER2 = 'rgba(232,168,75,';
+  const BROWN  = 'rgba(74,46,18,';
+
+  // Generate nodes
+  const nodes = [];
+  for (let i = 0; i < 28; i++) {
+    nodes.push({
+      x: Math.random(),
+      y: Math.random(),
+      vx: (Math.random() - 0.5) * 0.0004,
+      vy: (Math.random() - 0.5) * 0.0004,
+      r: 1.5 + Math.random() * 3,
+      phase: Math.random() * Math.PI * 2,
+    });
+  }
+
+  let t = 0;
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    t += 0.008;
+
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > 1) n.vx *= -1;
+      if (n.y < 0 || n.y > 1) n.vy *= -1;
+    });
+
+    // Draw edges
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const dx = (a.x - b.x) * W, dy = (a.y - b.y) * H;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 180) {
+          const alpha = (1 - dist/180) * 0.25;
+          const pulse = 0.5 + 0.5 * Math.sin(t * 1.2 + a.phase);
+          ctx.beginPath();
+          ctx.moveTo(a.x * W, a.y * H);
+          ctx.lineTo(b.x * W, b.y * H);
+          ctx.strokeStyle = AMBER + (alpha * pulse) + ')';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw nodes
+    nodes.forEach(n => {
+      const pulse = 0.6 + 0.4 * Math.sin(t * 1.5 + n.phase);
+      ctx.beginPath();
+      ctx.arc(n.x * W, n.y * H, n.r * pulse, 0, Math.PI * 2);
+      ctx.fillStyle = AMBER2 + (0.5 * pulse) + ')';
+      ctx.fill();
+    });
+
+    // Animated data packets travelling along edges
+    const pkT = (t * 0.3) % 1;
+    for (let i = 0; i < nodes.length - 1; i += 3) {
+      const a = nodes[i], b = nodes[(i+2) % nodes.length];
+      const px = (a.x + (b.x - a.x) * pkT) * W;
+      const py = (a.y + (b.y - a.y) * pkT) * H;
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, Math.PI * 2);
+      ctx.fillStyle = AMBER + '0.9)';
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+
+<!-- ══ PAWID CHATBOT ══ -->
+<button id="chat-fab" onclick="toggleChat()" title="Ask PawBot anything about dog breeds">
+  <div class="fab-pulse"></div>
+  <span id="fab-icon">🐾</span>
+</button>
+
+<div id="chat-window">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="chat-header-avatar">🐕</div>
+    <div class="chat-header-info">
+      <div class="chat-header-name">PawBot</div>
+      <div class="chat-header-sub" id="chatHeaderSub">Ask me anything about dog breeds</div>
+    </div>
+    <button class="chat-header-close" onclick="toggleChat()">✕</button>
+  </div>
+
+  <!-- Active breed context -->
+  <div class="chat-breed-ctx" id="chatBreedCtx">
+    <span>Context:</span>
+    <span class="chat-breed-ctx-none" id="chatBreedPill">No breed detected yet — ask anything!</span>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" id="chatMessages"></div>
+
+  <!-- Quick suggestions -->
+  <div class="chat-suggestions" id="chatSuggestions"></div>
+
+  <!-- Input -->
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chatInput" rows="1"
+      placeholder="Ask about any breed…"
+      onkeydown="handleChatKey(event)"
+      oninput="autoResize(this)"></textarea>
+    <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+
+// ════════════════════════════════════════════════════════════
+//  PAWBOT — Breed-Aware AI Chatbot
+// ════════════════════════════════════════════════════════════
+(function() {
+
+let chatOpen       = false;
+let chatHistory    = [];   // {role, content}[]
+let activeBotBreed = null; // breed name currently in context
+let fabNotified    = false;
+
+const SUGGESTIONS_GENERIC = [
+  'Best breed for Mumbai apartment?',
+  'Which breeds suit Indian heat?',
+  'Low-maintenance breeds?',
+  'Best dog for first-time owner?',
+];
+
+function getSuggestionsForBreed(breed) {
+  return [
+    `Is ${breed} good for Indian climate?`,
+    `How much exercise does ${breed} need?`,
+    `What should I feed my ${breed}?`,
+    `Common health issues in ${breed}?`,
+  ];
+}
+
+// ── Open / close ──
+window.toggleChat = function() {
+  chatOpen = !chatOpen;
+  document.getElementById('chat-window').classList.toggle('open', chatOpen);
+  document.getElementById('fab-icon').textContent = chatOpen ? '✕' : '🐾';
+  if (chatOpen) {
+    // Remove badge when opened
+    const badge = document.querySelector('.fab-badge');
+    if (badge) badge.remove();
+    if (chatHistory.length === 0) sendWelcome();
+    setTimeout(() => document.getElementById('chatInput').focus(), 350);
+    renderSuggestions();
+  }
+};
+
+// ── Sync breed context whenever a detection result renders ──
+const _chatOrigRender = window.renderResults;
+window.renderResults = function(info, predictions, isDemo) {
+  _chatOrigRender(info, predictions, isDemo);
+  if (predictions && predictions[0] && predictions[0].breed && predictions[0].breed !== '—') {
+    const breed = predictions[0].breed;
+    activeBotBreed = breed;
+    updateBreedContext(breed);
+    renderSuggestions();
+    if (!chatOpen) {
+      // Show pulse badge to hint user can ask the bot
+      let badge = document.querySelector('.fab-badge');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'fab-badge';
+        badge.textContent = '!';
+        document.getElementById('chat-fab').appendChild(badge);
+      }
+    }
+  }
+};
+
+function updateBreedContext(breed) {
+  const pill = document.getElementById('chatBreedPill');
+  const sub  = document.getElementById('chatHeaderSub');
+  if (breed) {
+    pill.outerHTML = `<span class="chat-breed-ctx-pill" id="chatBreedPill">${breed}</span>`;
+    sub.textContent = `Answering about ${breed}`;
+  }
+}
+
+function renderSuggestions() {
+  const el = document.getElementById('chatSuggestions');
+  const sugs = activeBotBreed ? getSuggestionsForBreed(activeBotBreed) : SUGGESTIONS_GENERIC;
+  el.innerHTML = sugs.map(s =>
+    `<button class="chat-sug-chip" onclick="useSuggestion(this)">${s}</button>`
+  ).join('');
+}
+
+window.useSuggestion = function(btn) {
+  document.getElementById('chatInput').value = btn.textContent;
+  sendChat();
+};
+
+// ── Welcome message ──
+function sendWelcome() {
+  const breed = activeBotBreed;
+  const msg = breed
+    ? `Hi! 🐾 I'm PawBot. I can see you just detected a **${breed}**! Ask me anything about this breed — food, health, training, whether it's right for your lifestyle — I'm here to help.`
+    : `Hi! 🐾 I'm PawBot, your dog breed expert. Detect a breed or just ask me anything — "Is a Labrador good for hot weather?", "What should I feed a Beagle?", anything you like!`;
+  // Display only — do NOT push to chatHistory (Anthropic requires first message = user)
+  appendBotMessage(msg);
+}
+
+// ── Send message ──
+window.sendChat = async function() {
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  autoResize(input);
+  document.getElementById('chatSuggestions').innerHTML = '';
+
+  appendUserMessage(text);
+  const typingId = appendTyping();
+  document.getElementById('chatSendBtn').disabled = true;
+
+  // Build context-rich system prompt
+  const systemPrompt = buildSystemPrompt();
+
+  // Add user message to history
+  chatHistory.push({ role: 'user', content: text });
+  if (chatHistory.length > 20) chatHistory.splice(0, 2);
+
+  // Anthropic requires: messages must start with role=user and alternate user/assistant
+  // Strip any leading assistant messages before sending
+  let cleanMessages = [...chatHistory];
+  while (cleanMessages.length > 0 && cleanMessages[0].role !== 'user') {
+    cleanMessages.shift();
+  }
+  // Also ensure proper alternation — remove consecutive same roles
+  const fixedMessages = [];
+  for (const msg of cleanMessages) {
+    if (fixedMessages.length === 0 || fixedMessages[fixedMessages.length-1].role !== msg.role) {
+      fixedMessages.push(msg);
+    }
+  }
+
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'mistral',
+        max_tokens: 250,
+        system: systemPrompt,
+        messages: fixedMessages,
+      }),
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch(parseErr) {
+      removeTyping(typingId);
+      appendBotMessage('Server returned an unreadable response. Check your terminal for errors.');
+      document.getElementById('chatSendBtn').disabled = false;
+      renderSuggestions();
+      return;
+    }
+
+    removeTyping(typingId);
+    console.log('PawBot response:', data);
+
+    const reply = data?.content?.[0]?.text || data?.error || "No response received. Check terminal logs.";
+    chatHistory.push({ role: 'assistant', content: reply });
+    appendBotMessage(reply);
+
+  } catch (err) {
+    removeTyping(typingId);
+    console.error('PawBot fetch error:', err);
+    appendBotMessage('Could not reach the server. Make sure app.py is running on port 5000!');
+  }
+
+  document.getElementById('chatSendBtn').disabled = false;
+  renderSuggestions();
+};
+
+function buildSystemPrompt() {
+  let base = `You are PawBot, a friendly expert assistant built into PawID — a dog breed detection app. You know everything about dog breeds: temperament, health, food, training, exercise, grooming, climate suitability, and especially how breeds do in Indian conditions (heat, humidity, city apartments, Indian diet options, common Indian cities like Mumbai, Delhi, Bangalore, Chennai).
+
+Keep answers concise and warm — max 3-4 sentences unless the user clearly wants detail. Use 1-2 relevant emojis naturally. Never be robotic. If you don't know something specific, give your best general advice.`;
+
+  if (activeBotBreed) {
+    base += `\n\nThe user has just detected: "${activeBotBreed}". When relevant, tailor your answer to this breed. If the user asks a general question, you can still relate it back to ${activeBotBreed} if helpful.`;
+  }
+
+  // Inject breed data if available
+  try {
+    const breedData = window.currentBreedData;
+    if (breedData && breedData.breed === activeBotBreed) {
+      const summary = {
+        origin: breedData.origin,
+        group: breedData.group,
+        size: breedData.size,
+        lifespan: breedData.lifespan,
+        india_score: breedData.india_suitability?.score,
+        india_notes: breedData.india_suitability?.notes,
+        temperament: breedData.temperament,
+        food: breedData.food,
+        health_issues: breedData.health?.common_issues,
+        exercise_mins: breedData.exercise?.daily_minutes,
+        climate: breedData.temperature,
+      };
+      base += `\n\nHere is the database info for ${activeBotBreed}:\n${JSON.stringify(summary, null, 2)}`;
+    }
+  } catch(e) {}
+
+  return base;
+}
+
+window.handleChatKey = function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChat();
+  }
+};
+
+window.autoResize = function(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+};
+
+// ── Message rendering ──
+function appendUserMessage(text) {
+  const el = createMsgEl('user', escHtml(text));
+  document.getElementById('chatMessages').appendChild(el);
+  scrollChat();
+}
+
+function appendBotMessage(text) {
+  // Render **bold** markdown and newlines
+  const formatted = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+  const el = createMsgEl('bot', formatted, true);
+  document.getElementById('chatMessages').appendChild(el);
+  scrollChat();
+}
+
+function createMsgEl(role, htmlContent, isHtml) {
+  const wrap = document.createElement('div');
+  wrap.className = `chat-msg ${role}`;
+  const avatar = document.createElement('div');
+  avatar.className = 'chat-msg-avatar';
+  avatar.textContent = role === 'bot' ? '🐕' : 'You';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  if (isHtml) bubble.innerHTML = htmlContent;
+  else        bubble.textContent = htmlContent;
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  return wrap;
+}
+
+function appendTyping() {
+  const id = 'typing-' + Date.now();
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg bot chat-typing';
+  wrap.id = id;
+  wrap.innerHTML = `<div class="chat-msg-avatar">🐕</div>
+    <div class="chat-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>`;
+  document.getElementById('chatMessages').appendChild(wrap);
+  scrollChat();
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function scrollChat() {
+  const msgs = document.getElementById('chatMessages');
+  setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 50);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Init suggestions on load
+document.addEventListener('DOMContentLoaded', renderSuggestions);
+
+})();
+
+</script>
+
+<script>
+/* ════════════════════════════════════════
+   PREMIUM ANIMATION ENGINE
+════════════════════════════════════════ */
+(function() {
+
+// ── Custom Paw Cursor ──
+const cursorEl  = document.createElement('div');
+cursorEl.id = 'paw-cursor';
+cursorEl.textContent = '🐾';
+document.body.appendChild(cursorEl);
+
+const dotEl = document.createElement('div');
+dotEl.id = 'cursor-dot';
+document.body.appendChild(dotEl);
+
+let mx = 0, my = 0, cx = 0, cy = 0;
+let trailTimer = 0;
+const TRAIL_INTERVAL = 120; // ms between trail paws
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursorEl.style.left = mx + 'px';
+  cursorEl.style.top  = my + 'px';
+  dotEl.style.left    = mx + 'px';
+  dotEl.style.top     = my + 'px';
+
+  // Drop trail paw
+  const now = Date.now();
+  if (now - trailTimer > TRAIL_INTERVAL) {
+    trailTimer = now;
+    const t = document.createElement('div');
+    t.className = 'trail-paw';
+    t.textContent = '🐾';
+    t.style.left = mx + 'px';
+    t.style.top  = my + 'px';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 700);
+  }
+});
+
+document.addEventListener('mousedown', () => cursorEl.classList.add('clicking'));
+document.addEventListener('mouseup',   () => cursorEl.classList.remove('clicking'));
+
+// Hide on leave, show on enter
+document.addEventListener('mouseleave', () => { cursorEl.style.opacity = '0'; dotEl.style.opacity = '0'; });
+document.addEventListener('mouseenter', () => { cursorEl.style.opacity = '1'; dotEl.style.opacity = '1'; });
+
+// ── Ripple on buttons ──
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.drop-btn, .detect-btn, .webcam-btn, .upload-tab, .breed-chip');
+  if (!btn) return;
+  const r = document.createElement('span');
+  r.className = 'btn-ripple';
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  r.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' +
+    (e.clientX - rect.left - size/2) + 'px;top:' + (e.clientY - rect.top - size/2) + 'px';
+  btn.appendChild(r);
+  setTimeout(() => r.remove(), 560);
+});
+
+// ── Scroll Reveal with IntersectionObserver ──
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 60);
+      revealObs.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+function observeReveal() {
+  document.querySelectorAll('.info-card').forEach((el, i) => {
+    el.style.transitionDelay = (i * 0.055) + 's';
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        setTimeout(() => el.classList.add('card-visible'), i * 55);
+        obs.unobserve(el);
+      }
+    }, { threshold: 0.1 });
+    obs.observe(el);
+  });
+}
+
+// ── Hero stat counter animation ──
+function animateCounter(el, target, suffix, duration) {
+  const isNum = !isNaN(parseInt(target));
+  if (!isNum) return;
+  const end = parseInt(target);
+  const start = 0;
+  const startTime = performance.now();
+  el.classList.add('counting');
+
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    const current = Math.floor(eased * end);
+    el.textContent = current + (suffix || '');
+    if (progress < 1) requestAnimationFrame(update);
+    else {
+      el.textContent = target + (suffix || '');
+      el.classList.remove('counting');
+    }
+  }
+  requestAnimationFrame(update);
+}
+
+// Run counter when hero is visible
+const heroObs = new IntersectionObserver(([e]) => {
+  if (e.isIntersecting) {
+    document.querySelectorAll('.hero-stat-num').forEach(el => {
+      const txt = el.textContent.trim();
+      if (txt === '130+')   animateCounter(el, '130', '+', 1200);
+      else if (txt === '10') animateCounter(el, '10', '', 800);
+      else if (txt.includes('20K')) {
+        // count up to 20 then add K+
+        let n = 0;
+        const iv = setInterval(() => {
+          n += 1;
+          el.textContent = n + 'K+';
+          if (n >= 20) clearInterval(iv);
+        }, 60);
+      }
+    });
+    heroObs.unobserve(e.target);
+  }
+}, { threshold: 0.5 });
+const heroEl = document.querySelector('.hero');
+if (heroEl) heroObs.observe(heroEl);
+
+// ── History card 3D tilt ──
+document.addEventListener('mousemove', e => {
+  const card = e.target.closest('.history-card');
+  if (!card) return;
+  const r = card.getBoundingClientRect();
+  const rx = ((e.clientY - r.top)  / r.height - 0.5) * 10;
+  const ry = ((e.clientX - r.left) / r.width  - 0.5) * -10;
+  card.style.transform = 'perspective(600px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) translateY(-6px) scale(1.02)';
+});
+document.addEventListener('mouseleave', e => {
+  const card = e.target.closest('.history-card');
+  if (card) card.style.transform = '';
+}, true);
+
+// ── Hook into renderResults for staggered card reveal ──
+const _animOrig = window.renderResults;
+window.renderResults = function(info, predictions, isDemo) {
+  _animOrig(info, predictions, isDemo);
+  // Slight delay then observe new cards
+  setTimeout(observeReveal, 100);
+
+  // Animate confidence badge number count-up
+  setTimeout(() => {
+    const badge = document.getElementById('rConf');
+    if (badge && badge.textContent && badge.textContent.includes('%')) {
+      const pct = parseFloat(badge.textContent);
+      if (!isNaN(pct)) {
+        let n = 0;
+        const target = pct;
+        const step = target / 40;
+        badge.textContent = '0%';
+        const iv = setInterval(() => {
+          n = Math.min(n + step, target);
+          badge.textContent = n.toFixed(1) + '%';
+          if (n >= target) { badge.textContent = target.toFixed(1) + '%'; clearInterval(iv); }
+        }, 18);
+      }
+    }
+  }, 450);
+};
+
+// ── Tab switch smooth morph ──
+const _animSwitchTab = window.switchTab;
+window.switchTab = function(tab) {
+  _animSwitchTab(tab);
+  // Observe new content
+  setTimeout(observeReveal, 150);
+};
+
+// ── Page load — stagger main sections ──
+document.addEventListener('DOMContentLoaded', () => {
+  observeReveal();
+
+  // Typing effect on hero h1
+  const h1 = document.querySelector('.hero h1');
+  if (h1) {
+    const original = h1.innerHTML;
+    h1.style.opacity = '0';
+    setTimeout(() => {
+      h1.style.opacity = '1';
+      h1.style.animation = 'hero-rise 0.8s cubic-bezier(0.22,1,0.36,1) both';
+    }, 300);
+  }
+});
+
+// ── Smooth scroll for result panel ──
+const _animShowResults = window.showResults;
+if (window.showResults) {
+  window.showResults = function() {
+    _animShowResults();
+    const panel = document.getElementById('resultPanel');
+    if (panel) {
+      panel.style.animation = 'none';
+      panel.offsetHeight; // reflow
+      panel.style.animation = '';
+    }
+  };
+}
+
+})();
+</script>
+
+<script>
+/* ════════════════════════════════════════
+   ULTRA PREMIUM UPGRADES — EXTRA EFFECTS
+════════════════════════════════════════ */
+(function() {
+
+// ── Particle Burst on Detection Complete ──
+function createParticleBurst(x, y) {
+  const container = document.createElement('div');
+  container.className = 'particle-burst';
+  container.style.cssText = `left:${x}px;top:${y}px;`;
+  const particles = ['🐾','✨','🐕','⭐','🌟','💫','🐶','🔍'];
+  const count = 12;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('span');
+    s.textContent = particles[i % particles.length];
+    const angle = (i / count) * Math.PI * 2;
+    const dist = 60 + Math.random() * 80;
+    s.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
+    s.style.setProperty('--dy', (Math.sin(angle) * dist) + 'px');
+    s.style.animationDelay = (i * 0.04) + 's';
+    s.style.fontSize = (0.8 + Math.random() * 0.8) + 'rem';
+    container.appendChild(s);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 1200);
+}
+
+// Hook into detect btn click
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.detect-btn, .webcam-btn-snap');
+  if (btn && !btn.disabled) {
+    createParticleBurst(e.clientX, e.clientY);
+  }
+});
+
+// ── Magnetic Button Effect ──
+document.addEventListener('mousemove', e => {
+  document.querySelectorAll('.detect-btn, .drop-btn').forEach(btn => {
+    const rect = btn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const pull = 60;
+    if (dist < pull) {
+      const factor = (1 - dist/pull) * 8;
+      btn.style.transform = `translate(${dx*factor/pull}px, ${dy*factor/pull}px)`;
+    } else {
+      btn.style.transform = '';
+    }
+  });
+});
+
+// ── Tilt 3D effect on result header card ──
+const resultHeaderCard = document.querySelector('.result-header-card');
+document.addEventListener('mousemove', e => {
+  const card = document.querySelector('.result-header-card');
+  if (!card || !card.closest('.result-panel.visible')) return;
+  const rect = card.getBoundingClientRect();
+  if (e.clientX < rect.left - 60 || e.clientX > rect.right + 60 || 
+      e.clientY < rect.top - 60 || e.clientY > rect.bottom + 60) {
+    card.style.transform = '';
+    return;
+  }
+  const rx = ((e.clientY - rect.top)  / rect.height - 0.5) * 8;
+  const ry = ((e.clientX - rect.left) / rect.width  - 0.5) * -8;
+  card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+  card.style.transition = 'transform 0.1s ease';
+});
+
+// ── Typing text effect for loading messages ──
+const loadingMsgEl = document.getElementById('loadingMsg');
+const _origShowLoading = window.showLoading;
+if (_origShowLoading) {
+  window.showLoading = function(msg) {
+    _origShowLoading(msg);
+    // Add typewriter to the msg
+    if (loadingMsgEl) {
+      loadingMsgEl.style.opacity = '0';
+      setTimeout(() => {
+        loadingMsgEl.style.opacity = '1';
+        loadingMsgEl.style.transition = 'opacity 0.3s';
+      }, 100);
+    }
+  };
+}
+
+// ── Smooth scroll indicator (progress line at top while scrolling) ──
+const scrollLine = document.createElement('div');
+scrollLine.style.cssText = `
+  position: fixed; top: 64px; left: 0; height: 2px; z-index: 199;
+  background: linear-gradient(90deg, var(--amber), var(--amber2), #f0c060);
+  width: 0%; transition: width 0.1s ease;
+  pointer-events: none; box-shadow: 0 0 8px rgba(201,124,42,0.6);
+`;
+document.body.appendChild(scrollLine);
+window.addEventListener('scroll', () => {
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+  const pct  = docH > 0 ? (window.scrollY / docH * 100) : 0;
+  scrollLine.style.width = pct + '%';
+});
+
+// ── Enhanced breed chip search highlight ──
+const _origFilterBreeds = window.filterBreeds;
+if (_origFilterBreeds) {
+  window.filterBreeds = function(query) {
+    _origFilterBreeds(query);
+    if (query.length > 1) {
+      document.querySelectorAll('.breed-chip').forEach(chip => {
+        if (chip.style.display === 'none') return;
+        const text = chip.textContent.trim();
+        const idx = text.toLowerCase().indexOf(query.toLowerCase());
+        if (idx >= 0) {
+          chip.innerHTML = text.slice(0, idx)
+            + `<mark>${text.slice(idx, idx + query.length)}</mark>`
+            + text.slice(idx + query.length);
+        }
+      });
+    } else {
+      document.querySelectorAll('.breed-chip').forEach(chip => {
+        chip.innerHTML = chip.textContent;
+      });
+    }
+  };
+}
+
+// ── Stagger breed chips on load ──
+function staggerBreedChips() {
+  document.querySelectorAll('.breed-chip').forEach((chip, i) => {
+    chip.style.opacity = '0';
+    chip.style.transform = 'translateY(10px) scale(0.9)';
+    chip.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.4,0.64,1)';
+    setTimeout(() => {
+      chip.style.opacity = '1';
+      chip.style.transform = '';
+    }, i * 25);
+  });
+}
+// Hook into tab switch
+const _origSwitch = window.switchTab;
+if (_origSwitch) {
+  window.switchTab = function(tab) {
+    _origSwitch(tab);
+    if (tab === 'browse') setTimeout(staggerBreedChips, 100);
+  };
+}
+
+// ── Info card staggered entry on render ──
+const _origRender = window.renderResults;
+if (_origRender) {
+  window.renderResults = function(info, predictions, isDemo) {
+    _origRender(info, predictions, isDemo);
+    setTimeout(() => {
+      document.querySelectorAll('.info-card').forEach((card, i) => {
+        card.style.transitionDelay = (i * 0.07) + 's';
+        setTimeout(() => card.classList.add('card-visible'), i * 70 + 100);
+      });
+    }, 200);
+  };
+}
+
+// ── Result panel entrance spark effect ──
+const _origShow = window.showResults;
+if (_origShow) {
+  window.showResults = function() {
+    _origShow();
+    const panel = document.getElementById('resultPanel');
+    if (panel) {
+      panel.style.animation = 'none';
+      void panel.offsetHeight;
+      panel.style.animation = 'result-appear 0.7s cubic-bezier(0.22,1,0.36,1) both';
+    }
+  };
+}
+
+// ── Keyboard shortcut: press '/' to focus breed search ──
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+    e.preventDefault();
+    const input = document.getElementById('breedSearch');
+    if (input) {
+      window.switchTab('browse');
+      setTimeout(() => input.focus(), 200);
+    }
+  }
+  // ESC closes chat
+  if (e.key === 'Escape') {
+    const chatWin = document.getElementById('chat-window');
+    if (chatWin && chatWin.classList.contains('open')) {
+      chatWin.classList.remove('open');
+    }
+  }
+});
+
+// ── Image drag preview with glow ──
+document.addEventListener('dragover', e => {
+  const dz = document.getElementById('dropZone');
+  if (dz && dz.style.display !== 'none') {
+    dz.style.boxShadow = '0 0 0 4px rgba(201,124,42,0.3), 0 16px 48px rgba(201,124,42,0.2)';
+  }
+});
+document.addEventListener('dragleave', () => {
+  const dz = document.getElementById('dropZone');
+  if (dz) dz.style.boxShadow = '';
+});
+document.addEventListener('drop', () => {
+  const dz = document.getElementById('dropZone');
+  if (dz) dz.style.boxShadow = '';
+});
+
+// ── Animate meter bars when scrolled into view ──
+const meterObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.querySelectorAll('.meter-fill[data-width]').forEach(el => {
+          el.style.width = el.dataset.width + '%';
+        });
+      }, 150);
+      meterObs.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+const _hookMeter = () => {
+  const grid = document.getElementById('infoGrid');
+  if (grid) meterObs.observe(grid);
+};
+document.addEventListener('DOMContentLoaded', _hookMeter);
+
+// ── Fun paw trail with color variation ──
+const PAW_EMOJIS = ['🐾', '🐕', '🦴', '✨'];
+let trailColor = 0;
+
+// ── Tab indicator animated highlight ──
+document.querySelectorAll('.upload-tab').forEach(tab => {
+  tab.addEventListener('mouseenter', () => {
+    if (!tab.classList.contains('active')) {
+      tab.style.background = 'rgba(201,124,42,0.06)';
+    }
+  });
+  tab.addEventListener('mouseleave', () => {
+    if (!tab.classList.contains('active')) {
+      tab.style.background = '';
+    }
+  });
+});
+
+// ── Show keyboard hint ──
+const hint = document.createElement('div');
+hint.style.cssText = `
+  position: fixed; bottom: 100px; left: 24px;
+  background: rgba(26,13,4,0.85);
+  color: rgba(255,255,255,0.65);
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 0.72rem; font-family: 'Space Mono', monospace;
+  z-index: 300; pointer-events: none;
+  border: 1px solid rgba(201,124,42,0.2);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.5s;
+  white-space: nowrap;
+`;
+hint.textContent = '💡 Press / to search breeds • ESC to close chat';
+document.body.appendChild(hint);
+setTimeout(() => { hint.style.opacity = '1'; }, 3500);
+setTimeout(() => { hint.style.opacity = '0'; }, 8000);
+setTimeout(() => { hint.remove(); }, 9000);
+
+})();
+</script>
+
+<script>
+/* ════════════════════════════════════════
+   NEW FEATURES: PDF · COMPARE · ANALYTICS
+════════════════════════════════════════ */
+
+/* ── PDF REPORT ── */
+async function downloadPDFReport() {
+  if (!currentBreedData) { alert('Please detect a breed first.'); return; }
+
+  // Load jsPDF dynamically
+  if (!window.jspdf) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const b   = currentBreedData;
+  const conf = document.getElementById('rConf').textContent;
+
+  // ── Dark header bar ──
+  doc.setFillColor(74, 46, 18);
+  doc.rect(0, 0, 210, 42, 'F');
+  doc.setFillColor(201, 124, 42);
+  doc.rect(0, 39, 210, 3, 'F');
+
+  doc.setTextColor(232, 168, 75);
+  doc.setFontSize(24); doc.setFont('helvetica', 'bold');
+  doc.text('PawID', 14, 20);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+  doc.text('Dog Breed Detection Report', 14, 30);
+  doc.setFontSize(9);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}), 130, 20);
+  doc.text('AI Confidence: ' + conf, 130, 29);
+
+  // ── Breed name ──
+  doc.setTextColor(74, 46, 18);
+  doc.setFontSize(22); doc.setFont('helvetica', 'bold');
+  doc.text((b.breed || b.name || 'Unknown Breed'), 14, 58);
+
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+  doc.setTextColor(138, 112, 96);
+  doc.text([b.origin, b.group, b.size].filter(Boolean).join('  ·  '), 14, 66);
+
+  // ── Description ──
+  doc.setTextColor(26, 13, 4); doc.setFontSize(10);
+  const descLines = doc.splitTextToSize(b.description || '', 182);
+  doc.text(descLines, 14, 75);
+  let y = 75 + descLines.length * 5 + 6;
+
+  // ── Section helper ──
+  const section = (icon, title, rows) => {
+    if (y > 260) { doc.addPage(); y = 20; }
+    doc.setFillColor(201, 124, 42);
+    doc.rect(14, y - 2, 4, 9, 'F');
+    doc.setFillColor(245, 233, 216);
+    doc.rect(18, y - 2, 178, 9, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+    doc.setTextColor(74, 46, 18);
+    doc.text(title.toUpperCase(), 22, y + 4);
+    y += 13;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(40, 20, 5);
+    rows.filter(Boolean).forEach(r => {
+      if (y > 275) { doc.addPage(); y = 20; }
+      doc.text('• ' + r, 20, y); y += 6;
+    });
+    y += 4;
+  };
+
+  const t   = b.temperament || {};
+  const f   = b.family_compatibility || {};
+  const ind = b.india_suitability || {};
+  const h   = b.health || {};
+  const ex  = b.exercise || {};
+  const fd  = b.food || {};
+  const tmp = b.temperature || {};
+
+  section('[BASIC STATS]', 'Basic Stats', [
+    'Lifespan: ' + (b.lifespan || b.stats?.lifespan || 'N/A'),
+    'Weight: '   + (b.weight_kg ? b.weight_kg + ' kg' : 'N/A') + '   Height: ' + (b.height_cm ? b.height_cm + ' cm' : 'N/A'),
+    'Size: '     + (b.size || 'N/A') + '   Group: ' + (b.group || 'N/A'),
+    'Coat: '     + (b.coat || 'N/A'),
+  ]);
+
+  section('[TEMPERAMENT]', 'Temperament', [
+    'Traits: '       + (t.traits || []).join(', '),
+    'Friendly: '     + (t.friendly_score || 'N/A') + '%   Trainability: ' + (t.trainable_score || 'N/A') + '%',
+    'Energy: '       + (t.energy_score || 'N/A') + '%   Barking: ' + (t.barking_score || 'N/A') + '%',
+  ]);
+
+  section('[FAMILY]', 'Family Compatibility', [
+    'With Kids: '       + (f.with_kids || 'N/A') + '%   With Strangers: ' + (f.with_strangers || 'N/A') + '%',
+    'With Other Dogs: ' + (f.with_other_dogs || 'N/A') + '%   With Cats: ' + (f.with_cats || 'N/A') + '%',
+    'Apartment OK: '    + (f.good_for_apartments ? 'Yes' : 'No') + '   Good for Beginners: ' + (f.first_time_owner ? 'Yes' : 'No'),
+    'Guard Dog: '       + (f.guard_dog_rating || 'N/A'),
+  ]);
+
+  section('[CLIMATE]', 'Climate & Temperature', [
+    'Ideal Temperature: ' + (tmp.ideal_celsius || 'N/A') + ' deg C',
+    'Climate: '           + (tmp.climate || 'N/A'),
+    'Heat Tolerance: '    + (tmp.heat_tolerance || 'N/A') + '   Cold Tolerance: ' + (tmp.cold_tolerance || 'N/A'),
+    tmp.notes,
+  ]);
+
+  section('[INDIA]', 'India Suitability', [
+    'Score: ' + (ind.score || 'N/A') + ' / 100',
+    ind.notes,
+  ]);
+
+  section('[EXERCISE]', 'Exercise', [
+    'Daily Exercise: '   + (ex.daily_minutes || 'N/A') + ' min/day',
+    'Intensity: '        + (ex.intensity || 'N/A'),
+    'Activities: '       + (ex.activities || []).join(', '),
+    ex.notes,
+  ]);
+
+  section('[HEALTH]', 'Health & Grooming', [
+    'Common Issues: '  + (h.common_issues || []).join(', '),
+    'Grooming Needs: ' + (h.grooming_needs || 'N/A') + '   Shedding: ' + (h.shedding_level || 'N/A'),
+    'Hypoallergenic: ' + (h.hypoallergenic ? 'Yes' : 'No'),
+    h.lifespan_note,
+  ]);
+
+  section('[DIET]', 'Diet & Nutrition', [
+    'Diet Type: '     + (fd.diet_type || 'N/A'),
+    'Meals/day: '     + (fd.meals_per_day || 'N/A'),
+    'Recommended: '   + (fd.recommended || []).join(', '),
+    'Avoid: '         + (fd.avoid || []).join(', '),
+    fd.special_notes,
+  ]);
+
+  if (b.fun_facts && b.fun_facts.length) {
+    section('[FUN FACTS]', 'Fun Facts', b.fun_facts.slice(0, 4));
+  }
+
+  // ── Footer ──
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFillColor(74, 46, 18);
+    doc.rect(0, 287, 210, 10, 'F');
+    doc.setFontSize(7); doc.setTextColor(180, 150, 100);
+    doc.text('PawID — Dog Breed Detection System  |  AI-Powered Report', 14, 293);
+    doc.text('Page ' + i + ' of ' + pageCount, 185, 293);
+  }
+
+  doc.save('PawID_' + (b.breed || b.name || 'breed').replace(/\s+/g, '_') + '_Report.pdf');
+  showToast('📄 PDF Report downloaded!');
+}
+
+
+/* ── COMPARE BREEDS MODAL ── */
+function openCompare() {
+  document.getElementById('compareModal').classList.add('visible');
+  if (currentBreedData) {
+    document.getElementById('compareBreed1').value = currentBreedData.breed || currentBreedData.name || '';
+  }
+  document.getElementById('compareBreed2').focus();
+}
+function closeCompare() {
+  document.getElementById('compareModal').classList.remove('visible');
+}
+document.getElementById('compareModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('compareModal')) closeCompare();
+});
+document.getElementById('compareBreed2').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runCompare();
+});
+
+async function runCompare() {
+  const b1  = document.getElementById('compareBreed1').value.trim();
+  const b2  = document.getElementById('compareBreed2').value.trim();
+  const out = document.getElementById('compareResult');
+  if (!b1 || !b2) {
+    out.innerHTML = '<p style="color:var(--red);padding:12px 0">Please enter both breed names.</p>';
+    return;
+  }
+  out.innerHTML = '<p style="color:var(--muted);text-align:center;padding:24px 0">Comparing…</p>';
+  try {
+    const res  = await fetch(`/api/compare?breed1=${encodeURIComponent(b1)}&breed2=${encodeURIComponent(b2)}`);
+    const data = await res.json();
+    if (!data.success) {
+      out.innerHTML = `<p style="color:var(--red);padding:12px 0">❌ ${data.error}</p>`;
+      return;
+    }
+    out.innerHTML = buildCompareTable(data.breed1, data.breed2);
+    setTimeout(() => {
+      out.querySelectorAll('.compare-mini-fill[data-w]').forEach(el => {
+        el.style.width = el.dataset.w + '%';
+      });
+    }, 120);
+  } catch {
+    out.innerHTML = '<p style="color:var(--red);padding:12px 0">Could not reach server.</p>';
+  }
+}
+
+function cmpRow(label, v1, v2, isNum) {
+  let c1 = '', c2 = '';
+  if (isNum) {
+    const n1 = parseFloat(v1) || 0, n2 = parseFloat(v2) || 0;
+    if (n1 > n2) { c1 = 'compare-win'; c2 = 'compare-lose'; }
+    else if (n2 > n1) { c2 = 'compare-win'; c1 = 'compare-lose'; }
+  }
+  const cell = (v, cls) => isNum && v
+    ? `<td class="${cls}">${v}<div class="compare-mini-bar"><div class="compare-mini-fill" data-w="${v}" style="width:0%"></div></div></td>`
+    : `<td class="${cls}">${v || '—'}</td>`;
+  return `<tr><td class="row-label">${label}</td>${cell(v1, c1)}${cell(v2, c2)}</tr>`;
+}
+
+function buildCompareTable(a, b) {
+  const t1 = a.temperament||{}, t2 = b.temperament||{};
+  const f1 = a.family_compatibility||{}, f2 = b.family_compatibility||{};
+  const i1 = a.india_suitability||{}, i2 = b.india_suitability||{};
+  const h1 = a.health||{}, h2 = b.health||{};
+  const e1 = a.exercise||{}, e2 = b.exercise||{};
+
+  return `
+  <div style="overflow-x:auto">
+  <table class="compare-table">
+    <thead><tr>
+      <th>Attribute</th>
+      <th>${a.emoji||'🐕'} ${a.breed||a.name||'Breed 1'}</th>
+      <th>${b.emoji||'🐕'} ${b.breed||b.name||'Breed 2'}</th>
+    </tr></thead>
+    <tbody>
+      <tr><td colspan="3" style="background:var(--warm);font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:1px;padding:6px 16px">BASICS</td></tr>
+      ${cmpRow('Origin', a.origin, b.origin, false)}
+      ${cmpRow('Size', a.size, b.size, false)}
+      ${cmpRow('Lifespan', a.lifespan||a.stats?.lifespan, b.lifespan||b.stats?.lifespan, false)}
+      ${cmpRow('Weight', a.weight_kg?a.weight_kg+' kg':'—', b.weight_kg?b.weight_kg+' kg':'—', false)}
+      ${cmpRow('Coat', a.coat, b.coat, false)}
+
+      <tr><td colspan="3" style="background:var(--warm);font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:1px;padding:6px 16px">TEMPERAMENT & TRAINING</td></tr>
+      ${cmpRow('Friendly Score', t1.friendly_score, t2.friendly_score, true)}
+      ${cmpRow('Trainability', t1.trainable_score, t2.trainable_score, true)}
+      ${cmpRow('Energy Level', t1.energy_score, t2.energy_score, true)}
+      ${cmpRow('Barking Level', t1.barking_score, t2.barking_score, true)}
+
+      <tr><td colspan="3" style="background:var(--warm);font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:1px;padding:6px 16px">FAMILY & LIVING</td></tr>
+      ${cmpRow('With Kids', f1.with_kids, f2.with_kids, true)}
+      ${cmpRow('With Strangers', f1.with_strangers, f2.with_strangers, true)}
+      ${cmpRow('With Other Dogs', f1.with_other_dogs, f2.with_other_dogs, true)}
+      ${cmpRow('Apartment OK', f1.good_for_apartments?'✅ Yes':'❌ No', f2.good_for_apartments?'✅ Yes':'❌ No', false)}
+      ${cmpRow('Beginner Friendly', f1.first_time_owner?'✅ Yes':'❌ No', f2.first_time_owner?'✅ Yes':'❌ No', false)}
+
+      <tr><td colspan="3" style="background:var(--warm);font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:1px;padding:6px 16px">INDIA & CLIMATE</td></tr>
+      ${cmpRow('India Score /100', i1.score, i2.score, true)}
+
+      <tr><td colspan="3" style="background:var(--warm);font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:1px;padding:6px 16px">EXERCISE & HEALTH</td></tr>
+      ${cmpRow('Exercise (min/day)', e1.daily_minutes, e2.daily_minutes, true)}
+      ${cmpRow('Grooming Needs', h1.grooming_needs, h2.grooming_needs, false)}
+      ${cmpRow('Shedding Level', h1.shedding_level, h2.shedding_level, false)}
+      ${cmpRow('Hypoallergenic', h1.hypoallergenic?'✅ Yes':'❌ No', h2.hypoallergenic?'✅ Yes':'❌ No', false)}
+    </tbody>
+  </table>
+  </div>`;
+}
+
+
+/* ── ANALYTICS DASHBOARD ── */
+async function openAnalytics() {
+  document.getElementById('analyticsModal').classList.add('visible');
+  const body = document.getElementById('analyticsBody');
+  body.innerHTML = '<p style="color:var(--muted);text-align:center;padding:48px 0">⏳ Loading analytics…</p>';
+  try {
+    const res  = await fetch('/api/analytics');
+    const data = await res.json();
+    body.innerHTML = buildAnalyticsDashboard(data);
+    // Animate breed bars after render
+    setTimeout(() => {
+      body.querySelectorAll('.analytics-bar-fill[data-w]').forEach(el => {
+        el.style.width = el.dataset.w + '%';
+      });
+    }, 120);
+  } catch {
+    body.innerHTML = '<p style="color:var(--red);text-align:center;padding:48px 0">❌ Could not load analytics. Is the server running?</p>';
+  }
+}
+function closeAnalytics() {
+  document.getElementById('analyticsModal').classList.remove('visible');
+}
+document.getElementById('analyticsModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('analyticsModal')) closeAnalytics();
+});
+
+function buildAnalyticsDashboard(data) {
+  const topBreeds  = data.top_breeds || [];
+  const maxCount   = topBreeds.length > 0 ? topBreeds[0].count : 1;
+  const buckets    = data.confidence_buckets || {'0-40':0,'40-60':0,'60-80':0,'80-100':0};
+  const total      = data.total_detections || 0;
+  const daily      = data.daily_counts || [];
+  const maxDay     = Math.max(...daily.map(d => d.count), 1);
+
+  const breedBarsHtml = topBreeds.length > 0
+    ? topBreeds.map(b => `
+        <div class="analytics-breed-bar">
+          <div class="analytics-breed-name">${b.breed}</div>
+          <div class="analytics-bar-track">
+            <div class="analytics-bar-fill" data-w="${Math.round(b.count / maxCount * 100)}" style="width:0%"></div>
+          </div>
+          <div class="analytics-count">${b.count}</div>
+        </div>`).join('')
+    : `<p style="color:var(--muted);font-size:0.85rem;padding:8px 0">
+         No real detections recorded yet. Detections in Demo Mode are not counted.<br>
+         Run the model with your trained <code>.keras</code> file to see statistics here.
+       </p>`;
+
+  const dayBarsHtml = daily.map(d => {
+    const h     = Math.max(3, Math.round(d.count / maxDay * 52));
+    const label = d.date.slice(5); // MM-DD
+    const isToday = d.date === new Date().toISOString().slice(0, 10);
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0">
+        <div style="width:100%;background:var(--warm);border-radius:3px 3px 0 0;height:52px;display:flex;align-items:flex-end;overflow:hidden">
+          <div style="width:100%;height:${h}px;background:${isToday
+            ? 'linear-gradient(180deg,var(--amber2),var(--amber))'
+            : 'linear-gradient(180deg,#c9a870,#a07840)'};border-radius:2px;transition:height 1.2s"></div>
+        </div>
+        <div style="font-size:0.52rem;color:${isToday?'var(--amber)':'var(--muted2)'};font-weight:${isToday?'700':'400'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${label}</div>
+        ${d.count > 0 ? `<div style="font-size:0.6rem;color:var(--amber);font-weight:700">${d.count}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  return `
+    <!-- KPIs -->
+    <div class="analytics-kpi-row">
+      <div class="analytics-kpi">
+        <div class="analytics-kpi-num">${total}</div>
+        <div class="analytics-kpi-label">Total Detections</div>
+      </div>
+      <div class="analytics-kpi">
+        <div class="analytics-kpi-num">${topBreeds.length}</div>
+        <div class="analytics-kpi-label">Unique Breeds</div>
+      </div>
+      <div class="analytics-kpi">
+        <div class="analytics-kpi-num">${data.total_breeds_in_db || 0}</div>
+        <div class="analytics-kpi-label">Breeds in Database</div>
+      </div>
+      <div class="analytics-kpi">
+        <div class="analytics-kpi-num">${buckets['80-100'] || 0}</div>
+        <div class="analytics-kpi-label">High Confidence</div>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <!-- Top Breeds -->
+      <div style="background:white;border-radius:16px;padding:20px;border:1px solid var(--warm2);grid-row:span 2">
+        <div class="analytics-section-title">🏆 Top Detected Breeds</div>
+        ${breedBarsHtml}
+      </div>
+
+      <!-- Confidence Distribution -->
+      <div style="background:white;border-radius:16px;padding:20px;border:1px solid var(--warm2)">
+        <div class="analytics-section-title">🎯 Confidence Distribution</div>
+        <div class="conf-bucket-row">
+          <div class="conf-bucket">
+            <div class="conf-bucket-val" style="color:#c03030">${buckets['0-40'] || 0}</div>
+            <div class="conf-bucket-label">0–40%<br><small>Low</small></div>
+          </div>
+          <div class="conf-bucket">
+            <div class="conf-bucket-val" style="color:var(--amber)">${buckets['40-60'] || 0}</div>
+            <div class="conf-bucket-label">40–60%<br><small>Medium</small></div>
+          </div>
+          <div class="conf-bucket">
+            <div class="conf-bucket-val" style="color:#2a8f28">${buckets['60-80'] || 0}</div>
+            <div class="conf-bucket-label">60–80%<br><small>Good</small></div>
+          </div>
+          <div class="conf-bucket">
+            <div class="conf-bucket-val" style="color:#1a6a16">${buckets['80-100'] || 0}</div>
+            <div class="conf-bucket-label">80–100%<br><small>High</small></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Activity -->
+      <div style="background:white;border-radius:16px;padding:20px;border:1px solid var(--warm2)">
+        <div class="analytics-section-title">📅 Last 14 Days Activity</div>
+        <div style="display:flex;align-items:flex-end;gap:3px;height:70px">
+          ${dayBarsHtml}
+        </div>
+        <div style="text-align:right;margin-top:6px;font-size:0.7rem;color:var(--muted2)">
+          Today highlighted in amber
+        </div>
+      </div>
+
+    </div>`;
+}
+
+/* ── ESC closes all modals ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeCompare();
+    closeAnalytics();
+  }
+});
+</script>
+
+</body>
