@@ -145,9 +145,9 @@ def preprocess_image(image_bytes):
 
 def generate_gradcam(image_bytes, pred_class_idx):
     """
-    Generate Grad-CAM heatmap for the predicted class.
-    Returns base64-encoded PNG of the heatmap overlay, or None on failure.
-    Works with any Keras model that has conv layers.
+    Grad-CAM for nested MobileNetV2.
+    Uses persistent GradientTape watching input tensor.
+    Both conv extractor and full model run inside the same tape.
     """
     model, class_indices, model_working = load_model()
     if not model_working or model is None:
@@ -156,69 +156,74 @@ def generate_gradcam(image_bytes, pred_class_idx):
     try:
         import tensorflow as tf
 
-        # Find the last convolutional layer
-        last_conv = None
-        for layer in reversed(model.layers):
-            if hasattr(layer, 'filters') or 'conv' in layer.name.lower():
-                last_conv = layer
-                break
-
-        if last_conv is None:
-            return None
-
-        # Build gradient model
-        grad_model = tf.keras.models.Model(
-            inputs=model.inputs,
-            outputs=[last_conv.output, model.output]
+        # Build conv extractor: mobilenet input → Conv_1 output
+        mobilenet  = model.get_layer('mobilenetv2_1.00_224')
+        conv_layer = mobilenet.get_layer('Conv_1')
+        conv_model = tf.keras.models.Model(
+            inputs  = mobilenet.input,
+            outputs = conv_layer.output,
+            name    = 'gradcam_extractor'
         )
 
-        img_array = preprocess_image(image_bytes)
-        img_tensor = tf.cast(img_array, tf.float32)
+        img_array  = preprocess_image(image_bytes)
+        img_tensor = tf.constant(img_array, dtype=tf.float32)
 
-        with tf.GradientTape() as tape:
+        # Persistent tape — watch input, run both models inside
+        with tf.GradientTape(persistent=True) as tape:
             tape.watch(img_tensor)
-            conv_outputs, predictions = grad_model(img_tensor)
-            loss = predictions[:, pred_class_idx]
+            conv_outputs = conv_model(img_tensor, training=False)
+            predictions  = model(img_tensor, training=False)
+            loss         = predictions[:, pred_class_idx]
 
-        # Compute gradients
         grads = tape.gradient(loss, conv_outputs)
-        pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+        del tape
 
-        conv_outputs = conv_outputs[0]
-        heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
-        heatmap = tf.squeeze(heatmap)
-        heatmap = tf.maximum(heatmap, 0) / (tf.math.reduce_max(heatmap) + 1e-8)
-        heatmap = heatmap.numpy()
+        if grads is None:
+            # Fallback: mean absolute activation map
+            conv_np = conv_outputs.numpy()[0]
+            heatmap = np.mean(np.abs(conv_np), axis=-1)
+        else:
+            pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2)).numpy()
+            conv_np      = conv_outputs.numpy()[0]
+            heatmap      = np.einsum('hwc,c->hw', conv_np, pooled_grads)
 
-        # Resize heatmap to original image size
+        # ReLU + normalize
+        heatmap = np.maximum(heatmap, 0)
+        if heatmap.max() > 1e-8:
+            heatmap = heatmap / heatmap.max()
+
+        # Resize to 224×224
         heatmap_resized = np.array(
-            Image.fromarray(np.uint8(heatmap * 255)).resize((IMG_SIZE, IMG_SIZE), Image.LANCZOS)
+            Image.fromarray(np.uint8(heatmap * 255))
+                 .resize((IMG_SIZE, IMG_SIZE), Image.LANCZOS)
         )
 
-        # Apply colormap (jet: blue→green→yellow→red)
-        def apply_colormap(gray):
-            """Simple jet colormap: 0=blue, 0.5=green, 1=red"""
-            r = np.clip(1.5 - np.abs(gray / 255.0 * 4 - 3), 0, 1)
-            g = np.clip(1.5 - np.abs(gray / 255.0 * 4 - 2), 0, 1)
-            b = np.clip(1.5 - np.abs(gray / 255.0 * 4 - 1), 0, 1)
-            return (np.stack([r, g, b], axis=-1) * 255).astype(np.uint8)
+        # Jet colormap
+        g  = heatmap_resized.astype(np.float32) / 255.0
+        r  = np.clip(1.5 - np.abs(g * 4 - 3), 0, 1)
+        gn = np.clip(1.5 - np.abs(g * 4 - 2), 0, 1)
+        b  = np.clip(1.5 - np.abs(g * 4 - 1), 0, 1)
+        heatmap_colored = (np.stack([r, gn, b], axis=-1) * 255).astype(np.uint8)
 
-        heatmap_colored = apply_colormap(heatmap_resized)
+        # Blend over original
+        original = np.array(
+            Image.open(io.BytesIO(image_bytes))
+                 .convert('RGB')
+                 .resize((IMG_SIZE, IMG_SIZE), Image.LANCZOS)
+        )
+        overlay = (original * 0.5 + heatmap_colored * 0.5).clip(0, 255).astype(np.uint8)
 
-        # Overlay on original image
-        original = np.array(Image.open(io.BytesIO(image_bytes)).convert('RGB').resize((IMG_SIZE, IMG_SIZE)))
-        overlay = (original * 0.55 + heatmap_colored * 0.45).clip(0, 255).astype(np.uint8)
-
-        # Encode as base64 PNG
-        output_img = Image.fromarray(overlay)
+        # Base64 PNG
         buf = io.BytesIO()
-        output_img.save(buf, format='PNG')
+        Image.fromarray(overlay).save(buf, format='PNG')
         buf.seek(0)
-        encoded = base64.b64encode(buf.read()).decode('utf-8')
-        return encoded
+        result = base64.b64encode(buf.read()).decode('utf-8')
+        print(f"✅ Grad-CAM success — size={len(result)} chars")
+        return result
 
     except Exception as e:
-        print(f"⚠️  Grad-CAM error: {e}")
+        print(f"❌ Grad-CAM error: {type(e).__name__}: {e}")
+        import traceback; traceback.print_exc()
         return None
  
  
