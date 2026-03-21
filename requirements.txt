@@ -4,5 +4,4 @@ numpy
 pillow
 python-dotenv
 requests
-tf-keras
-tensorflow-cpu==2.16.2
+tensorflow-cpu==2.15.0
